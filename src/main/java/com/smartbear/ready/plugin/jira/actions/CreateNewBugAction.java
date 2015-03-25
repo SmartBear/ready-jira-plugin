@@ -20,8 +20,8 @@ import com.eviware.x.form.XFormOptionsField;
 import com.google.inject.Inject;
 import com.smartbear.ready.functional.actions.FunctionalActionGroups;
 import com.smartbear.ready.plugin.jira.dialog.BugInfoDialogConsts;
-import com.smartbear.ready.plugin.jira.impl.BugTrackerAttachmentCreationResult;
-import com.smartbear.ready.plugin.jira.impl.BugTrackerIssueCreationResult;
+import com.smartbear.ready.plugin.jira.impl.AttachmentAddingResult;
+import com.smartbear.ready.plugin.jira.impl.IssueCreationResult;
 import com.smartbear.ready.plugin.jira.impl.IssueInfoDialog;
 import com.smartbear.ready.plugin.jira.impl.JiraApiCallResult;
 import com.smartbear.ready.plugin.jira.impl.JiraProvider;
@@ -62,14 +62,14 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             for (Map.Entry<String, CimFieldInfo> entry:requiredFields.entrySet()){
                 extraValues.put(entry.getKey(), values.get(entry.getValue().getName()));
             }
-            BugTrackerIssueCreationResult result = bugTrackerProvider.createIssue(projectKey, issueType, priority, summary, description, extraValues);
+            IssueCreationResult result = bugTrackerProvider.createIssue(projectKey, issueType, priority, summary, description, extraValues);
             if (result.getSuccess()){
                 boolean isAttachmentSuccess = true;
                 URI newIssueAttachURI = bugTrackerProvider.getIssue(result.getIssue().getKey()).getAttachmentsUri();
                 String bugTrackerActiveItemName = bugTrackerProvider.getActiveItemName();
                 StringBuilder resultError = new StringBuilder();
                 if (dialog.getBooleanValue(BugInfoDialogConsts.ATTACH_SOAPUI_LOG)){
-                    BugTrackerAttachmentCreationResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".log", bugTrackerProvider.getSoapUIExecutionLog());
+                    AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".log", bugTrackerProvider.getSoapUIExecutionLog());
                     if (!attachResult.getSuccess()){
                         isAttachmentSuccess = false;
                         resultError.append(attachResult.getError());
@@ -78,7 +78,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 }
 
                 if (dialog.getBooleanValue(BugInfoDialogConsts.ATTACH_LOADUI_LOG)){
-                    BugTrackerAttachmentCreationResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".log", bugTrackerProvider.getLoadUIExecutionLog());
+                    AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".log", bugTrackerProvider.getLoadUIExecutionLog());
                     if (!attachResult.getSuccess()){
                         isAttachmentSuccess = false;
                         resultError.append(attachResult.getError());
@@ -87,7 +87,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 }
 
                 if (dialog.getBooleanValue(BugInfoDialogConsts.ATTACH_SERVICEV_LOG)){
-                    BugTrackerAttachmentCreationResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".log", bugTrackerProvider.getServiceVExecutionLog());
+                    AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".log", bugTrackerProvider.getServiceVExecutionLog());
                     if (!attachResult.getSuccess()){
                         isAttachmentSuccess = false;
                         resultError.append(attachResult.getError());
@@ -96,7 +96,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 }
 
                 if (dialog.getBooleanValue(BugInfoDialogConsts.ATTACH_READYAPI_LOG)){
-                    BugTrackerAttachmentCreationResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".log", bugTrackerProvider.getReadyApiLog());
+                    AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".log", bugTrackerProvider.getReadyApiLog());
                     if (!attachResult.getSuccess()){
                         isAttachmentSuccess = false;
                         resultError.append(attachResult.getError());
@@ -105,7 +105,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 }
 
                 if (dialog.getBooleanValue(BugInfoDialogConsts.ATTACH_PROJECT)){
-                    BugTrackerAttachmentCreationResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".xml", bugTrackerProvider.getRootProject());
+                    AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".xml", bugTrackerProvider.getRootProject());
                     if (!attachResult.getSuccess()){
                         isAttachmentSuccess = false;
                         resultError.append(attachResult.getError());
@@ -115,7 +115,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
                 String attachAnyFileValue = dialog.getValue(BugInfoDialogConsts.ATTACH_ANY_FILE);
                 if (!StringUtils.isNullOrEmpty(dialog.getValue(BugInfoDialogConsts.ATTACH_ANY_FILE))){
-                    BugTrackerAttachmentCreationResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, attachAnyFileValue);
+                    AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, attachAnyFileValue);
                     if (!attachResult.getSuccess()){
                         isAttachmentSuccess = false;
                         resultError.append(attachResult.getError());

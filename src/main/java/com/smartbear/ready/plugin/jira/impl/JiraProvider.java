@@ -244,18 +244,18 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     }
 
     @Override
-    public BugTrackerIssueCreationResult createIssue(String projectKey, String issueKey, String priority, String summary, String description, Map<String, String> extraRequiredValues) {
+    public IssueCreationResult createIssue(String projectKey, String issueKey, String priority, String summary, String description, Map<String, String> extraRequiredValues) {
         //https://bitbucket.org/atlassian/jira-rest-java-client/src/75a64c9d81aad7d8bd9beb11e098148407b13cae/test/src/test/java/samples/Example1.java?at=master
         //http://www.restapitutorial.com/httpstatuscodes.html
         if (restClient == null) {
-            return new BugTrackerIssueCreationResult("Incorrectly specified bug tracker URI.");//TODO: correct message
+            return new IssueCreationResult("Incorrectly specified bug tracker URI.");//TODO: correct message
         }
 
         BasicIssue basicIssue = null;
         try {
             JiraApiCallResult<IssueType> issueType = getIssueTypeByKey(projectKey, issueKey);
             if (!issueType.isSuccess()) {
-                return new BugTrackerIssueCreationResult(issueType.getError().getMessage());
+                return new IssueCreationResult(issueType.getError().getMessage());
             }
 
             IssueInputBuilder issueInputBuilder = new IssueInputBuilder(projectKey, issueType.getResult().getId());
@@ -297,12 +297,12 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             Promise<BasicIssue> issue = restClient.getIssueClient().createIssue(issueInputBuilder.build());
             basicIssue = issue.get();
         } catch (InterruptedException e) {
-            return new BugTrackerIssueCreationResult(e.getMessage());
+            return new IssueCreationResult(e.getMessage());
         } catch (ExecutionException e) {
-            return new BugTrackerIssueCreationResult(e.getMessage());
+            return new IssueCreationResult(e.getMessage());
         }
 
-        return new BugTrackerIssueCreationResult(basicIssue);
+        return new IssueCreationResult(basicIssue);
     }
 
     protected void finalize() throws Throwable {
@@ -315,40 +315,40 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     }
 
     @Override
-    public BugTrackerAttachmentCreationResult attachFile(URI attachmentUri, String fileName, InputStream inputStream) {
+    public AttachmentAddingResult attachFile(URI attachmentUri, String fileName, InputStream inputStream) {
         if (attachmentUri == null) {
-            return new BugTrackerAttachmentCreationResult(BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED);
+            return new AttachmentAddingResult(BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED);
         }
         if (StringUtils.isNullOrEmpty(fileName)) {
-            return new BugTrackerAttachmentCreationResult(BUG_TRACKER_FILE_NAME_NOT_SPECIFIED);
+            return new AttachmentAddingResult(BUG_TRACKER_FILE_NAME_NOT_SPECIFIED);
         }
 
         try {
             restClient.getIssueClient().addAttachment(attachmentUri, inputStream, fileName).get();
         } catch (InterruptedException e) {
-            return new BugTrackerAttachmentCreationResult(e.getMessage());
+            return new AttachmentAddingResult(e.getMessage());
         } catch (ExecutionException e) {
-            return new BugTrackerAttachmentCreationResult(e.getMessage());
+            return new AttachmentAddingResult(e.getMessage());
         }
 
-        return new BugTrackerAttachmentCreationResult();//everything is ok
+        return new AttachmentAddingResult();//everything is ok
     }
 
     @Override
-    public BugTrackerAttachmentCreationResult attachFile(URI attachmentUri, String filePath){
+    public AttachmentAddingResult attachFile(URI attachmentUri, String filePath){
         if (attachmentUri == null) {
-            return new BugTrackerAttachmentCreationResult(BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED);
+            return new AttachmentAddingResult(BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED);
         }
         if (StringUtils.isNullOrEmpty(filePath)) {
-            return new BugTrackerAttachmentCreationResult(BUG_TRACKER_INCORRECT_FILE_PATH);
+            return new AttachmentAddingResult(BUG_TRACKER_INCORRECT_FILE_PATH);
         }
         File file = new File (filePath);
         if (!file.exists() && file.isFile()){
-            return new BugTrackerAttachmentCreationResult(BUG_TRACKER_INCORRECT_FILE_PATH);
+            return new AttachmentAddingResult(BUG_TRACKER_INCORRECT_FILE_PATH);
         }
 
         restClient.getIssueClient().addAttachments(attachmentUri, file);
-        return new BugTrackerAttachmentCreationResult();
+        return new AttachmentAddingResult();
     }
 
     public InputStream getSoapUIExecutionLog() {
