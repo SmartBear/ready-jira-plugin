@@ -1,0 +1,24 @@
+# Project files
+*.iml
+.idea
+.settings/
+.classpath
+.project
+.DS_Store
+
+# Logs
+*.log
+
+# Build folders
+target/
+
+# Altered tests
+soapui-pro/test/
+soapui-pro/ext
+
+# Misc
+proguard-mapping.txt
+
+Sample.java
+build.bat
+install.bat
