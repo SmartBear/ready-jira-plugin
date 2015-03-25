@@ -15,7 +15,7 @@ public class IssueInfoDialog {
         return JOptionPane.showConfirmDialog(null,
                 getPanel(issueType, link, issueKey),
                 issueKey,
-                JOptionPane.OK_OPTION);
+                JOptionPane.OK_OPTION);//TODO: strange,but it doesn't work.
     }
 
     private static JPanel getPanel(String issueType, String link, String issueKey) {
