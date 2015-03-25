@@ -33,10 +33,11 @@ import java.util.Map;
         iconPath = "com/smartbear/ready/plugin/jira/icons/Create-new-bug-tracker-issue-icon_20-20-px.png")
 public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     private XFormDialog dialog;
+    private static String NEW_ISSUE_DIALOG_CAPTION = "Create new Jira issue";
     HashMap<String, CimFieldInfo> requiredFields = new HashMap<>();
     @Inject
     public CreateNewBugAction() {
-        super("Create new bug", "Specifies the required fields to create bug in Jira");
+        super("Create Jira issue", "Specifies the required fields to create new issue in Jira");
     }
 
     @Override
@@ -130,7 +131,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     }
 
     XFormDialog createAndInitBugInfoDialog(JiraProvider bugTrackerProvider){
-        XFormDialogBuilder builder = XFormFactory.createDialogBuilder("Create new bug");
+        XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION);
         XForm form = builder.createForm("Basic");
         String selectedProject = (String)bugTrackerProvider.getAvailableProjects().toArray()[0];
         XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT, bugTrackerProvider.getAvailableProjects().toArray(), selectedProject);
@@ -138,8 +139,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE, bugTrackerProvider.getAvailableIssueTypes(selectedProject).toArray(), selectedIssueType);
         String selectedPriority = (String)bugTrackerProvider.getPriorities().toArray()[0];
         XFormOptionsField prioritiesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_PRIORITY, bugTrackerProvider.getPriorities().toArray(), selectedPriority);
-        form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, "Bug summary", XForm.FieldType.TEXT);
-        form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, "Bug description", XForm.FieldType.TEXTAREA);
+        form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, "Issue summary", XForm.FieldType.TEXT);
+        form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, "Issue description", XForm.FieldType.TEXTAREA);
         JiraApiCallResult<Map<String, CimFieldInfo>>requiredFields = bugTrackerProvider.getRequiredFields(selectedProject, selectedIssueType);
         if (requiredFields.isSuccess()){
             for (Map.Entry<String, CimFieldInfo> entry:requiredFields.getResult().entrySet()){
@@ -160,7 +161,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         form.addCheckBox(BugInfoDialogConsts.ATTACH_SOAPUI_LOG, "");
         form.addCheckBox(BugInfoDialogConsts.ATTACH_READYAPI_LOG, "");
         form.addCheckBox(BugInfoDialogConsts.ATTACH_PROJECT, "");
-        return builder.buildDialog(builder.buildOkCancelActions(), "Specify options", null);
+        return builder.buildDialog(builder.buildOkCancelActions(), "Please specify issue options", null);
     }
 
     @Override
