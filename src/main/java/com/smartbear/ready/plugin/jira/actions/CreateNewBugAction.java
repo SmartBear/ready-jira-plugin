@@ -8,6 +8,7 @@ import com.eviware.soapui.model.testsuite.TestCase;
 import com.eviware.soapui.model.testsuite.TestStep;
 import com.eviware.soapui.model.testsuite.TestSuite;
 import com.eviware.soapui.plugins.ActionConfiguration;
+import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.action.support.AbstractSoapUIAction;
 import com.eviware.soapui.support.types.StringToStringMap;
@@ -105,6 +106,15 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                     if (!attachResult.getSuccess()){
                         isAttachmentSuccess = false;
                         resultError.append(attachResult.getError());
+                        resultError.append("\r\n");
+                    }
+                }
+
+                if (!StringUtils.isNullOrEmpty(dialog.getValue(BugInfoDialogConsts.ATTACH_ANY_FILE))){
+                    BugTrackerAttachmentCreationResult attachResult = bugTrackerProvider.attachFile(bugTrackerProvider.getIssue(result.getIssue().getKey()).getAttachmentsUri(), dialog.getValue(BugInfoDialogConsts.ATTACH_ANY_FILE));
+                    if (!attachResult.getSuccess()){
+                        isAttachmentSuccess = false;
+                        resultError.append(attachResult.getError());
                     }
                 }
 
@@ -159,8 +169,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             }
         }
         form.addCheckBox(BugInfoDialogConsts.ATTACH_SOAPUI_LOG, "");
-        form.addCheckBox(BugInfoDialogConsts.ATTACH_READYAPI_LOG, "");
         form.addCheckBox(BugInfoDialogConsts.ATTACH_PROJECT, "");
+        form.addTextField(BugInfoDialogConsts.ATTACH_ANY_FILE, "Attach file", XForm.FieldType.FILE);
         return builder.buildDialog(builder.buildOkCancelActions(), "Please specify issue options", null);
     }
 

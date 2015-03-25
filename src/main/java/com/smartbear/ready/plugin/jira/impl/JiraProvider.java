@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,6 +50,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
 
     private final static String BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED = "Issue key not specified";
     private final static String BUG_TRACKER_FILE_NAME_NOT_SPECIFIED = "File name not specified";
+    private final static String BUG_TRACKER_INCORRECT_FILE_PATH = "Incorrect file path";
 
     private ModelItem activeElement;
     private JiraRestClient restClient = null;
@@ -330,6 +332,23 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         }
 
         return new BugTrackerAttachmentCreationResult();//everything is ok
+    }
+
+    @Override
+    public BugTrackerAttachmentCreationResult attachFile(URI attachmentUri, String filePath){
+        if (attachmentUri == null) {
+            return new BugTrackerAttachmentCreationResult(BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED);
+        }
+        if (StringUtils.isNullOrEmpty(filePath)) {
+            return new BugTrackerAttachmentCreationResult(BUG_TRACKER_INCORRECT_FILE_PATH);
+        }
+        File file = new File (filePath);
+        if (!file.exists() && file.isFile()){
+            return new BugTrackerAttachmentCreationResult(BUG_TRACKER_INCORRECT_FILE_PATH);
+        }
+
+        restClient.getIssueClient().addAttachments(attachmentUri, file);
+        return new BugTrackerAttachmentCreationResult();
     }
 
     public InputStream getSoapUIExecutionLog() {
