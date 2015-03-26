@@ -24,6 +24,7 @@ import com.eviware.soapui.model.settings.Settings;
 import com.eviware.soapui.model.support.ModelSupport;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
+import com.eviware.x.form.XFormField;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerPrefs;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerSettings;
 import org.slf4j.Logger;
@@ -62,6 +63,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     Map<String, Project> requestedProjects = new HashMap<>();
     Iterable<Priority> priorities = null;
     Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*FieldName*/, CimFieldInfo>>> projectFields = new HashMap<>();
+    Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*FieldName*/, CimFieldInfo>>> allRequiredFields = new HashMap<>();
 
     public static JiraProvider getProvider (){
         if (instance == null){
@@ -231,15 +233,23 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return null;
     }
 
-    private JiraApiCallResult<Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*Field Name*/, CimFieldInfo>>>> getProjectFields (String project){
-        if (!projectFields.containsKey(project)) {
+    private JiraApiCallResult<Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*Field Name*/, CimFieldInfo>>>> getProjectFields (String ... projects){
+        List<String> uncachedProjectsList = new ArrayList<>();
+        for (String project:projects){
+            if (!projectFields.containsKey(project)){
+                uncachedProjectsList.add(project);
+            }
+        }
+        if (uncachedProjectsList.size() > 0) {
+            String [] uncachedProjectsArray = new String[uncachedProjectsList.size()];
+            uncachedProjectsList.toArray(uncachedProjectsArray);
             GetCreateIssueMetadataOptions options = new GetCreateIssueMetadataOptionsBuilder()
                     .withExpandedIssueTypesFields()
-                    .withProjectKeys(project)
+                    .withProjectKeys(uncachedProjectsList.toArray(uncachedProjectsArray))
                     .build();
             try {
                 Iterable<CimProject> cimProjects = restClient.getIssueClient().getCreateIssueMetadata(options).get();
-                for (CimProject cimProject : cimProjects) {//definitely, it will be only one project
+                for (CimProject cimProject : cimProjects) {
                     Iterable<CimIssueType> issueTypes = cimProject.getIssueTypes();
                     HashMap<String, Map<String, CimFieldInfo>> issueTypeFields = new HashMap<String, Map<String, CimFieldInfo>>();
                     for (CimIssueType currentIssueType : issueTypes) {
@@ -256,19 +266,39 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return new JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>>(projectFields);
     }
 
-    public Map<String, CimFieldInfo> getRequiredFieldsForProjectIssue(String projectKey, String issueType) {
-        JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> allProjectFieldsResult = getProjectFields(projectKey);
+    public Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*FieldName*/, CimFieldInfo>>> getProjectRequiredFields(){
+        List<String> allProjectsList = getListOfAllProjects();
+        List<String> uncachedProjectsList = new ArrayList<>();
+        for (String project:allProjectsList){
+            if (!allRequiredFields.containsKey(project)){
+                uncachedProjectsList.add(project);
+            }
+        }
+        String [] uncachedProjects = new String [uncachedProjectsList.size()];
+        allProjectsList.toArray(uncachedProjects);
+
+        JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> allProjectFieldsResult = getProjectFields(uncachedProjects);
         if (!allProjectFieldsResult.isSuccess()){
             return null;
         }
-        Map<String, CimFieldInfo> issueTypeFields = allProjectFieldsResult.getResult().get(projectKey).get(issueType);
-        Map<String, CimFieldInfo> requiredFields = new HashMap<>();
-        for (Map.Entry<String, CimFieldInfo> item: issueTypeFields.entrySet()){
-            if (item.getValue().isRequired()){
-                requiredFields.put(item.getKey(), item.getValue());
+
+        for (Map.Entry<String,Map<String, Map<String, CimFieldInfo>>> project:allProjectFieldsResult.getResult().entrySet()){
+            Map<String, Map<String, CimFieldInfo>> issueTypeFields = project.getValue();
+            Map<String, Map<String/*FieldName*/, CimFieldInfo>> issueTypeRequiredFields = new HashMap<String, Map<String, CimFieldInfo>>();
+            for (Map.Entry<String, Map<String, CimFieldInfo>> issueType:issueTypeFields.entrySet()){
+                Map<String, CimFieldInfo> fields = issueType.getValue();
+                Map<String, CimFieldInfo> requiredFields = new HashMap<>();
+                for (Map.Entry<String, CimFieldInfo> field:fields.entrySet()){
+                    if(field.getValue().isRequired()){
+                        requiredFields.put(field.getKey(), field.getValue());
+                    }
+                }
+                issueTypeRequiredFields.put(issueType.getKey(), requiredFields);
             }
+            allRequiredFields.put(project.getKey(), issueTypeRequiredFields);
         }
-        return requiredFields;
+
+        return allRequiredFields;
     }
 
     @Override
