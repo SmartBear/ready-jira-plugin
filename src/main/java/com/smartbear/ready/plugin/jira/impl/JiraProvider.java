@@ -57,6 +57,12 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     private BugTrackerSettings bugTrackerSettings;
     static private JiraProvider instance = null;
 
+    //Properties below exist for reducing number of Jira API calls since it's very greedy operation
+    Iterable<BasicProject> allProjects = null;
+    Map<String, Project> requestedProjects = new HashMap<>();
+    Iterable<Priority> priorities = null;
+    Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*FieldName*/, CimFieldInfo>>> projectFields = new HashMap<>();
+
     public static JiraProvider getProvider (){
         if (instance == null){
             instance = new JiraProvider();
@@ -89,18 +95,25 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     }
 
     private JiraApiCallResult<Iterable<BasicProject>> getAllProjects() {
+        if (allProjects != null){
+            return new JiraApiCallResult<Iterable<BasicProject>>(allProjects);
+        }
+
         try {
-            return new JiraApiCallResult<Iterable<BasicProject>>(restClient.getProjectClient().getAllProjects().get());
+            allProjects = restClient.getProjectClient().getAllProjects().get();
+            return new JiraApiCallResult<Iterable<BasicProject>>(allProjects);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
+            allProjects = null;
             return new JiraApiCallResult<Iterable<BasicProject>>(e);
         } catch (ExecutionException e) {
             logger.error(e.getMessage());
+            allProjects = null;
             return new JiraApiCallResult<Iterable<BasicProject>>(e);
         }
     }
 
-    public List<String> getAvailableProjects() {
+    public List<String> getListOfAllProjects() {
         JiraApiCallResult<Iterable<BasicProject>> projects = getAllProjects();
         if (!projects.isSuccess()) {
             return new ArrayList<String>();
@@ -115,18 +128,21 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     }
 
     private JiraApiCallResult<Project> getProjectByKey(String key) {
-        try {
-            return new JiraApiCallResult<Project>(restClient.getProjectClient().getProject(key).get());
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-            return new JiraApiCallResult<Project>(e);
-        } catch (ExecutionException e) {
-            logger.error(e.getMessage());
-            return new JiraApiCallResult<Project>(e);
+        if (!requestedProjects.containsKey(key)) {
+            try {
+                requestedProjects.put(key, restClient.getProjectClient().getProject(key).get());
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+                return new JiraApiCallResult<Project>(e);
+            } catch (ExecutionException e) {
+                logger.error(e.getMessage());
+                return new JiraApiCallResult<Project>(e);
+            }
         }
+        return new JiraApiCallResult<Project>(requestedProjects.get(key));
     }
 
-    private JiraApiCallResult<OptionalIterable<IssueType>> getIssueTypes(String projectKey) {
+    private JiraApiCallResult<OptionalIterable<IssueType>> getProjectIssueTypes(String projectKey) {
         JiraApiCallResult<Project> project = getProjectByKey(projectKey);
         if (!project.isSuccess()) {
             return new JiraApiCallResult<OptionalIterable<IssueType>>(project.getError());
@@ -134,8 +150,8 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return new JiraApiCallResult<OptionalIterable<IssueType>>(project.getResult().getIssueTypes());
     }
 
-    public List<String> getAvailableIssueTypes(String projectKey) {
-        JiraApiCallResult<OptionalIterable<IssueType>> result = getIssueTypes(projectKey);
+    public List<String> getListOfAllIssueTypes(String projectKey) {
+        JiraApiCallResult<OptionalIterable<IssueType>> result = getProjectIssueTypes(projectKey);
         if (!result.isSuccess()) {
             return new ArrayList<String>();
         }
@@ -150,14 +166,17 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     }
 
     private JiraApiCallResult<Iterable<Priority>> getAllPriorities() {
-        final MetadataRestClient client = restClient.getMetadataClient();
-        try {
-            return new JiraApiCallResult<Iterable<Priority>>(client.getPriorities().get());
-        } catch (InterruptedException e) {
-            return new JiraApiCallResult<Iterable<Priority>>(e);
-        } catch (ExecutionException e) {
-            return new JiraApiCallResult<Iterable<Priority>>(e);
+        if (priorities == null) {
+            final MetadataRestClient client = restClient.getMetadataClient();
+            try {
+                priorities = client.getPriorities().get();
+            } catch (InterruptedException e) {
+                return new JiraApiCallResult<Iterable<Priority>>(e);
+            } catch (ExecutionException e) {
+                return new JiraApiCallResult<Iterable<Priority>>(e);
+            }
         }
+        return new JiraApiCallResult<Iterable<Priority>>(priorities);
     }
 
     private Priority getPriorityByName(String priorityName) {
@@ -173,7 +192,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return null;
     }
 
-    public List<String> getPriorities() {
+    public List<String> getListOfPriorities() {
         JiraApiCallResult<Iterable<Priority>> priorities = getAllPriorities();
         if (!priorities.isSuccess()) {
             return new ArrayList<String>();
@@ -187,13 +206,13 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return prioritiesAll;
     }
 
-    private JiraApiCallResult<IssueType> getIssueTypeByKey(String projectKey, String issueKey) {
-        JiraApiCallResult<OptionalIterable<IssueType>> issueTypes = getIssueTypes(projectKey);
+    private JiraApiCallResult<IssueType> getIssueType(String projectKey, String requiredIssueType) {
+        JiraApiCallResult<OptionalIterable<IssueType>> issueTypes = getProjectIssueTypes(projectKey);
         if (!issueTypes.isSuccess()) {
             return new JiraApiCallResult<IssueType>(issueTypes.getError());
         }
         for (IssueType issueType : issueTypes.getResult()) {
-            if (issueType.getName().equals(issueKey)) {
+            if (issueType.getName().equals(requiredIssueType)) {
                 return new JiraApiCallResult<IssueType>(issueType);
             }
         }
@@ -212,35 +231,44 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return null;
     }
 
-    public JiraApiCallResult<Map<String, CimFieldInfo>> getRequiredFields(String projectKey, String issueType) {
-        GetCreateIssueMetadataOptions options = new GetCreateIssueMetadataOptionsBuilder()
-                .withExpandedIssueTypesFields()
-                .withProjectKeys(projectKey)
-                .build();
-        try {
-            Iterable<CimProject> cimProjects = restClient.getIssueClient().getCreateIssueMetadata(options).get();
-            for (CimProject project : cimProjects) {
-                Iterable<CimIssueType> issueTypes = project.getIssueTypes();
-                for (CimIssueType currentIssueType : issueTypes) {
-                    if (currentIssueType.getName().equals(issueType)) {
-                        Map<String, CimFieldInfo> fields = currentIssueType.getFields();
-                        Map<String, CimFieldInfo> requiredFields = new HashMap<>();
-                        for (Map.Entry<String, CimFieldInfo> entry : fields.entrySet()) {
-                            if (entry.getValue().isRequired()) {
-                                requiredFields.put(entry.getKey(), entry.getValue());
-                            }
-                        }
-                        return new JiraApiCallResult<Map<String, CimFieldInfo>>(requiredFields);
+    private JiraApiCallResult<Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*Field Name*/, CimFieldInfo>>>> getProjectFields (String project){
+        if (!projectFields.containsKey(project)) {
+            GetCreateIssueMetadataOptions options = new GetCreateIssueMetadataOptionsBuilder()
+                    .withExpandedIssueTypesFields()
+                    .withProjectKeys(project)
+                    .build();
+            try {
+                Iterable<CimProject> cimProjects = restClient.getIssueClient().getCreateIssueMetadata(options).get();
+                for (CimProject cimProject : cimProjects) {//definitely, it will be only one project
+                    Iterable<CimIssueType> issueTypes = cimProject.getIssueTypes();
+                    HashMap<String, Map<String, CimFieldInfo>> issueTypeFields = new HashMap<String, Map<String, CimFieldInfo>>();
+                    for (CimIssueType currentIssueType : issueTypes) {
+                        issueTypeFields.put(currentIssueType.getName(), currentIssueType.getFields());
                     }
+                    projectFields.put(cimProject.getKey(),issueTypeFields);
                 }
+            } catch (InterruptedException e) {
+                return new JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>>(e);
+            } catch (ExecutionException e) {
+                return new JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>>(e);
             }
-        } catch (InterruptedException e) {
-            return new JiraApiCallResult<Map<String, CimFieldInfo>>(e);
-        } catch (ExecutionException e) {
-            return new JiraApiCallResult<Map<String, CimFieldInfo>>(e);
         }
+        return new JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>>(projectFields);
+    }
 
-        return new JiraApiCallResult<Map<String, CimFieldInfo>>(new HashMap<String, CimFieldInfo>());
+    public Map<String, CimFieldInfo> getRequiredFieldsForProjectIssue(String projectKey, String issueType) {
+        JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> allProjectFieldsResult = getProjectFields(projectKey);
+        if (!allProjectFieldsResult.isSuccess()){
+            return null;
+        }
+        Map<String, CimFieldInfo> issueTypeFields = allProjectFieldsResult.getResult().get(projectKey).get(issueType);
+        Map<String, CimFieldInfo> requiredFields = new HashMap<>();
+        for (Map.Entry<String, CimFieldInfo> item: issueTypeFields.entrySet()){
+            if (item.getValue().isRequired()){
+                requiredFields.put(item.getKey(), item.getValue());
+            }
+        }
+        return requiredFields;
     }
 
     @Override
@@ -253,7 +281,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
 
         BasicIssue basicIssue = null;
         try {
-            JiraApiCallResult<IssueType> issueType = getIssueTypeByKey(projectKey, issueKey);
+            JiraApiCallResult<IssueType> issueType = getIssueType(projectKey, issueKey);
             if (!issueType.isSuccess()) {
                 return new IssueCreationResult(issueType.getError().getMessage());
             }

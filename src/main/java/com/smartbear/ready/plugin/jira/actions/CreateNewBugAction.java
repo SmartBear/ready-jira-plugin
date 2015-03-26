@@ -23,7 +23,6 @@ import com.smartbear.ready.plugin.jira.dialog.BugInfoDialogConsts;
 import com.smartbear.ready.plugin.jira.impl.AttachmentAddingResult;
 import com.smartbear.ready.plugin.jira.impl.IssueCreationResult;
 import com.smartbear.ready.plugin.jira.impl.IssueInfoDialog;
-import com.smartbear.ready.plugin.jira.impl.JiraApiCallResult;
 import com.smartbear.ready.plugin.jira.impl.JiraProvider;
 
 import java.net.URI;
@@ -34,9 +33,13 @@ import java.util.Map;
 @ActionConfiguration(actionGroup = FunctionalActionGroups.FUNCTIONAL_MODULE_TOOLBAR_ACTIONS, targetType = ModelItem.class, isToolbarAction = true,
         iconPath = "com/smartbear/ready/plugin/jira/icons/Create-new-bug-tracker-issue-icon_20-20-px.png")
 public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
-    private XFormDialog dialog;
     private static String NEW_ISSUE_DIALOG_CAPTION = "Create new Jira issue";
+
+    private XFormDialog dialog;
+
     HashMap<String, CimFieldInfo> requiredFields = new HashMap<>();
+
+
     @Inject
     public CreateNewBugAction() {
         super("Create Jira issue", "Specifies the required fields to create new issue in Jira");
@@ -147,17 +150,17 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     XFormDialog createAndInitBugInfoDialog(JiraProvider bugTrackerProvider){
         XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION);
         XForm form = builder.createForm("Basic");
-        String selectedProject = (String)bugTrackerProvider.getAvailableProjects().toArray()[0];
-        XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT, bugTrackerProvider.getAvailableProjects().toArray(), selectedProject);
-        String selectedIssueType = (String)bugTrackerProvider.getAvailableIssueTypes(selectedProject).toArray()[0];
-        XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE, bugTrackerProvider.getAvailableIssueTypes(selectedProject).toArray(), selectedIssueType);
-        String selectedPriority = (String)bugTrackerProvider.getPriorities().toArray()[0];
-        XFormOptionsField prioritiesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_PRIORITY, bugTrackerProvider.getPriorities().toArray(), selectedPriority);
+        String selectedProject = (String)bugTrackerProvider.getListOfAllProjects().toArray()[0];
+        XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT, bugTrackerProvider.getListOfAllProjects().toArray(), selectedProject);
+        String selectedIssueType = (String)bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray()[0];
+        XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE, bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray(), selectedIssueType);
+        String selectedPriority = (String)bugTrackerProvider.getListOfPriorities().toArray()[0];
+        XFormOptionsField prioritiesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_PRIORITY, bugTrackerProvider.getListOfPriorities().toArray(), selectedPriority);
         form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, "Issue summary", XForm.FieldType.TEXT);
         form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, "Issue description", XForm.FieldType.TEXTAREA);
-        JiraApiCallResult<Map<String, CimFieldInfo>>requiredFields = bugTrackerProvider.getRequiredFields(selectedProject, selectedIssueType);
-        if (requiredFields.isSuccess()){
-            for (Map.Entry<String, CimFieldInfo> entry:requiredFields.getResult().entrySet()){
+        Map<String, CimFieldInfo>requiredFields = bugTrackerProvider.getRequiredFieldsForProjectIssue(selectedProject, selectedIssueType);
+        if (requiredFields != null){
+            for (Map.Entry<String, CimFieldInfo> entry:requiredFields.entrySet()){
                 String key = entry.getKey();
                 if (key.equals("summary") || key.equals("project") || key.equals("issuetype") || key.equals("description")){
                     continue;
