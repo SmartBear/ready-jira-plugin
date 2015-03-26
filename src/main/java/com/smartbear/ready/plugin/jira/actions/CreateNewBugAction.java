@@ -1,6 +1,5 @@
 package com.smartbear.ready.plugin.jira.actions;
 
-import com.atlassian.jira.rest.client.api.domain.BasicComponent;
 import com.atlassian.jira.rest.client.api.domain.CimFieldInfo;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.model.ModelItem;
@@ -16,6 +15,8 @@ import com.eviware.x.form.XForm;
 import com.eviware.x.form.XFormDialog;
 import com.eviware.x.form.XFormDialogBuilder;
 import com.eviware.x.form.XFormFactory;
+import com.eviware.x.form.XFormField;
+import com.eviware.x.form.XFormFieldListener;
 import com.eviware.x.form.XFormOptionsField;
 import com.google.inject.Inject;
 import com.smartbear.ready.functional.actions.FunctionalActionGroups;
@@ -27,7 +28,6 @@ import com.smartbear.ready.plugin.jira.impl.JiraProvider;
 import com.smartbear.ready.plugin.jira.impl.Utils;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,10 +61,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             return;
         }
         String selectedProject = (String)projects.toArray()[0];
-        dialog = createAndInitBugInfoDialog(bugTrackerProvider, selectedProject);
-        if (dialog.show()){
-            handleOk(bugTrackerProvider);
-        }
+        dialog = createAndInitBugInfoDialog(bugTrackerProvider, selectedProject, null);
     }
 
     private void handleOk (JiraProvider bugTrackerProvider){
@@ -160,7 +157,11 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 CimFieldInfo fieldInfo = entry.getValue();
                 if (fieldInfo.getAllowedValues() != null){
                     Object [] values = Utils.IterableValuesToArray(fieldInfo.getAllowedValues());
-                    baseDialog.addComboBox(fieldInfo.getName(), values, (String)values[0]);
+                    if (values.length > 0) {
+                        baseDialog.addComboBox(fieldInfo.getName(), values, (String) values[0]);
+                    } else {
+                        baseDialog.addTextField(fieldInfo.getName(), fieldInfo.getName(), XForm.FieldType.TEXT);
+                    }
                 } else {
                     baseDialog.addTextField(fieldInfo.getName(), fieldInfo.getName(), XForm.FieldType.TEXT);
                 }
@@ -169,12 +170,32 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    private XFormDialog createAndInitBugInfoDialog(JiraProvider bugTrackerProvider, String selectedProject){
+    private XFormDialog createAndInitBugInfoDialog(final JiraProvider bugTrackerProvider, final String selectedProject, String selectedIssueType){
         XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION);
         XForm form = builder.createForm("Basic");
         XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT, bugTrackerProvider.getListOfAllProjects().toArray(), BugInfoDialogConsts.TARGET_ISSUE_PROJECT);
-        String selectedIssueType = (String)bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray()[0];
+        projectsCombo.setValue(selectedProject);
+        projectsCombo.addFormFieldListener(new XFormFieldListener() {
+            @Override
+            public void valueChanged(XFormField xFormField, String newValue, String oldValue) {
+                dialog.release();
+                dialog = null;
+                createAndInitBugInfoDialog(bugTrackerProvider, newValue, null);
+            }
+        });
+        if (selectedIssueType == null) {
+            selectedIssueType = (String) bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray()[0];
+        }
         XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE, bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray(), BugInfoDialogConsts.ISSUE_TYPE);
+        issueTypesCombo.setValue(selectedIssueType);
+        issueTypesCombo.addFormFieldListener(new XFormFieldListener() {
+            @Override
+            public void valueChanged(XFormField xFormField, String newValue, String oldValue) {
+                dialog.release();
+                dialog = null;
+                createAndInitBugInfoDialog(bugTrackerProvider, selectedProject, newValue);
+            }
+        });
         String selectedPriority = (String)bugTrackerProvider.getListOfPriorities().toArray()[0];
         form.addComboBox(BugInfoDialogConsts.ISSUE_PRIORITY, bugTrackerProvider.getListOfPriorities().toArray(), selectedPriority);
         form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, "Issue summary", XForm.FieldType.TEXT);
@@ -183,7 +204,11 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         form.addCheckBox(BugInfoDialogConsts.ATTACH_SOAPUI_LOG, "");
         form.addCheckBox(BugInfoDialogConsts.ATTACH_PROJECT, "");
         form.addTextField(BugInfoDialogConsts.ATTACH_ANY_FILE, "Attach file", XForm.FieldType.FILE);
-        return builder.buildDialog(builder.buildOkCancelActions(), "Please specify issue options", null);
+        dialog = builder.buildDialog(builder.buildOkCancelActions(), "Please specify issue options", null);
+        if (dialog.show()){
+            handleOk(bugTrackerProvider);
+        }
+        return dialog;
     }
 
     @Override
