@@ -5,6 +5,7 @@ import com.atlassian.jira.rest.client.api.GetCreateIssueMetadataOptionsBuilder;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.MetadataRestClient;
 import com.atlassian.jira.rest.client.api.OptionalIterable;
+import com.atlassian.jira.rest.client.api.domain.BasicComponent;
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 import com.atlassian.jira.rest.client.api.domain.BasicProject;
 import com.atlassian.jira.rest.client.api.domain.CimFieldInfo;
@@ -219,6 +220,27 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             }
         }
         return null;
+    }
+
+    public Iterable<BasicComponent> getProjectComponents (String projectKey){
+        try {
+            return restClient.getProjectClient().getProject(projectKey).get().getComponents();
+        } catch (InterruptedException e) {
+            return null;
+        } catch (ExecutionException e) {
+            return null;
+        }
+    }
+
+    public Object[] getProjectComponentNames (String projectKey){
+        Iterable<BasicComponent> basicComponents = getProjectComponents(projectKey);
+        ArrayList<String> objects = new ArrayList<>();
+        for (BasicComponent obj:basicComponents){
+            objects.add(obj.getName());
+        }
+        Object[] simpleArray = new String[objects.size()];
+        objects.toArray(simpleArray);
+        return simpleArray;
     }
 
     public Issue getIssue(String key) {
