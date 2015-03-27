@@ -439,6 +439,12 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return activeElement.getName();
     }
 
+    public String getRootProjectName() {
+        WsdlProject project = findActiveElementRootProject(activeElement);
+        return project.getName();
+    }
+
+
     public InputStream getRootProject() {
         WsdlProject project = findActiveElementRootProject(activeElement);
         return new ByteArrayInputStream(project.getConfig().toString().getBytes(StandardCharsets.UTF_8));

@@ -66,12 +66,12 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         if (dialogOne.show()) {
             dialogTwo = createSecondDialog(bugTrackerProvider, selectedProject, selectedIssueType);
             if (dialogTwo.show()) {
-                handleOk(bugTrackerProvider);
+                createIssue(bugTrackerProvider);
             }
         }
     }
 
-    private void handleOk(JiraProvider bugTrackerProvider) {
+    private void createIssue(JiraProvider bugTrackerProvider) {
         StringToStringMap values = dialogTwo.getValues();
         String summary = values.get(BugInfoDialogConsts.ISSUE_SUMMARY, null);
         String description = values.get(BugInfoDialogConsts.ISSUE_DESCRIPTION, null);
@@ -90,37 +90,9 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         if (result.getSuccess()) {
             boolean isAttachmentSuccess = true;
             URI newIssueAttachURI = bugTrackerProvider.getIssue(result.getIssue().getKey()).getAttachmentsUri();
-            String bugTrackerActiveItemName = bugTrackerProvider.getActiveItemName();
             StringBuilder resultError = new StringBuilder();
             if (dialogTwo.getBooleanValue(BugInfoDialogConsts.ATTACH_SOAPUI_LOG)) {
-                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".log", bugTrackerProvider.getSoapUIExecutionLog());
-                if (!attachResult.getSuccess()) {
-                    isAttachmentSuccess = false;
-                    resultError.append(attachResult.getError());
-                    resultError.append("\r\n");
-                }
-            }
-
-            if (dialogTwo.getBooleanValue(BugInfoDialogConsts.ATTACH_LOADUI_LOG)) {
-                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".log", bugTrackerProvider.getLoadUIExecutionLog());
-                if (!attachResult.getSuccess()) {
-                    isAttachmentSuccess = false;
-                    resultError.append(attachResult.getError());
-                    resultError.append("\r\n");
-                }
-            }
-
-            if (dialogTwo.getBooleanValue(BugInfoDialogConsts.ATTACH_SERVICEV_LOG)) {
-                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".log", bugTrackerProvider.getServiceVExecutionLog());
-                if (!attachResult.getSuccess()) {
-                    isAttachmentSuccess = false;
-                    resultError.append(attachResult.getError());
-                    resultError.append("\r\n");
-                }
-            }
-
-            if (dialogTwo.getBooleanValue(BugInfoDialogConsts.ATTACH_READYAPI_LOG)) {
-                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".log", bugTrackerProvider.getReadyApiLog());
+                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerProvider.getActiveItemName() + ".log", bugTrackerProvider.getSoapUIExecutionLog());
                 if (!attachResult.getSuccess()) {
                     isAttachmentSuccess = false;
                     resultError.append(attachResult.getError());
@@ -129,7 +101,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             }
 
             if (dialogTwo.getBooleanValue(BugInfoDialogConsts.ATTACH_PROJECT)) {
-                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerActiveItemName + ".xml", bugTrackerProvider.getRootProject());
+                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerProvider.getRootProjectName() + ".xml", bugTrackerProvider.getRootProject());
                 if (!attachResult.getSuccess()) {
                     isAttachmentSuccess = false;
                     resultError.append(attachResult.getError());
