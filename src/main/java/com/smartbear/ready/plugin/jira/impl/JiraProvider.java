@@ -415,6 +415,16 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return new AttachmentAddingResult();
     }
 
+    private InputStream getExecutionLog(String loggerName) {
+        org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(loggerName);
+        try {
+            return (InputStream) new FileInputStream(log.getName());
+        } catch (FileNotFoundException e) {
+            logger.error(e.getMessage());
+        }
+        return null;
+    }
+
     public InputStream getSoapUIExecutionLog() {
         return getExecutionLog("com.eviware.soapui");
     }
@@ -444,10 +454,13 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return project.getName();
     }
 
-
     public InputStream getRootProject() {
         WsdlProject project = findActiveElementRootProject(activeElement);
         return new ByteArrayInputStream(project.getConfig().toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    private WsdlProject findActiveElementRootProject(ModelItem activeElement) {
+        return ModelSupport.getModelItemProject(activeElement);
     }
 
     public boolean settingsComplete(BugTrackerSettings settings) {
@@ -470,19 +483,5 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     soapuiSettings.getString(BugTrackerPrefs.PASSWORD, ""));
         }
         return bugTrackerSettings;
-    }
-
-    private WsdlProject findActiveElementRootProject(ModelItem activeElement) {
-        return ModelSupport.getModelItemProject(activeElement);
-    }
-
-    private InputStream getExecutionLog(String loggerName) {
-        org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(loggerName);
-        try {
-            return (InputStream) new FileInputStream(log.getName());
-        } catch (FileNotFoundException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
     }
 }
