@@ -29,6 +29,8 @@ import com.smartbear.ready.plugin.jira.impl.JiraProvider;
 import com.smartbear.ready.plugin.jira.impl.Utils;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,10 +39,11 @@ import java.util.Map;
         iconPath = "com/smartbear/ready/plugin/jira/icons/Create-new-bug-tracker-issue-icon_20-20-px.png")
 public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     private static String NEW_ISSUE_DIALOG_CAPTION = "Create new Jira issue";
-    private XFormDialog dialogTwo;
-
     private XFormDialog dialogOne;
+    private XFormDialog dialogTwo;
     String selectedProject, selectedIssueType;
+
+    private static final List<String> skippedFieldKeys = Arrays.asList("summary", "project", "issuetype" , "description");
 
     @Inject
     public CreateNewBugAction() {
@@ -60,7 +63,6 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             UISupport.showErrorMessage("No available Jira projects.");
             return;
         }
-        String selectedProject = (String)projects.toArray()[0];
         dialogOne = createFirstDialog(bugTrackerProvider);
         if (dialogOne.show()) {
             dialogTwo = createSecondDialog(bugTrackerProvider, selectedProject, selectedIssueType);
@@ -80,7 +82,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         Map<String, String> extraValues = new HashMap<String, String>();
         for (Map.Entry<String, CimFieldInfo> entry:bugTrackerProvider.getProjectRequiredFields(projectKey).get(projectKey).get(issueType).entrySet()){
             String key = entry.getKey();
-            if (key.equals("summary") || key.equals("project") || key.equals("issuetype") || key.equals("description")) {
+            if (skippedFieldKeys.contains(key)) {
                 continue;
             }
             extraValues.put(entry.getKey(), values.get(entry.getValue().getName()));
@@ -160,19 +162,22 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         Map<String,Map<String, Map<String, CimFieldInfo>>> allRequiredFields = bugTrackerProvider.getProjectRequiredFields(selectedProject);
         for (Map.Entry<String, CimFieldInfo> field : allRequiredFields.get(selectedProject).get(selectedIssueType).entrySet()) {
             String key = field.getKey();
-            if (key.equals("summary") || key.equals("project") || key.equals("issuetype") || key.equals("description")) {
+            if (skippedFieldKeys.contains(key)) {
                 continue;
             }
             CimFieldInfo fieldInfo = field.getValue();
             if (fieldInfo.getAllowedValues() != null) {
                 Object[] values = Utils.IterableValuesToArray(fieldInfo.getAllowedValues());
                 if (values.length > 0) {
-                    baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
+                    XFormOptionsField combo = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
+                    //combo.setRequired(true, "");
                 } else {
-                    baseDialog.addTextField(fieldInfo.getName(), field.getKey(), XForm.FieldType.TEXT);
+                    XFormTextField textField = baseDialog.addTextField(fieldInfo.getName(), field.getKey(), XForm.FieldType.TEXT);
+                    //textField.setRequired(true, "");
                 }
             } else {
-                baseDialog.addTextField(fieldInfo.getName(), field.getKey(), XForm.FieldType.TEXT);
+                XFormTextField textField = baseDialog.addTextField(fieldInfo.getName(), field.getKey(), XForm.FieldType.TEXT);
+                //textField.setRequired(true, "");
             }
         }
     }
@@ -217,7 +222,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 selectedIssueType = newValue;
             }
         });
-        return builder.buildDialog(builder.buildOkCancelActions(), "Please enter the required project", null);
+        return builder.buildDialog(builder.buildOkCancelActions(), "Please enter the required project and issue type", null);
     }
 
     @Override
