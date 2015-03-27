@@ -266,25 +266,15 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return new JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>>(projectFields);
     }
 
-    public Map<String,Map<String, Map<String, CimFieldInfo>>> getProjectRequiredFields(){
-        List<String> allProjectsList = getListOfAllProjects();
-        List<String> uncachedProjectsList = new ArrayList<>();
-        for (String project:allProjectsList){
-            if (!allRequiredFields.containsKey(project)){
-                uncachedProjectsList.add(project);
-            }
-        }
-        String [] uncachedProjects = new String [uncachedProjectsList.size()];
-        allProjectsList.toArray(uncachedProjects);
-
-        JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> allProjectFieldsResult = getProjectFields(uncachedProjects);
+    public Map<String,Map<String, Map<String, CimFieldInfo>>> getProjectRequiredFields(String ... projects){
+        JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> allProjectFieldsResult = getProjectFields(projects);
         if (!allProjectFieldsResult.isSuccess()){
             return null;
         }
 
         for (Map.Entry<String,Map<String, Map<String, CimFieldInfo>>> project:allProjectFieldsResult.getResult().entrySet()){
             Map<String, Map<String, CimFieldInfo>> issueTypeFields = project.getValue();
-            Map<String, Map<String/*FieldName*/, CimFieldInfo>> issueTypeRequiredFields = new HashMap<String, Map<String, CimFieldInfo>>();
+            Map<String, Map<String, CimFieldInfo>> issueTypeRequiredFields = new HashMap<String, Map<String, CimFieldInfo>>();
             for (Map.Entry<String, Map<String, CimFieldInfo>> issueType:issueTypeFields.entrySet()){
                 Map<String, CimFieldInfo> fields = issueType.getValue();
                 Map<String, CimFieldInfo> requiredFields = new HashMap<>();
