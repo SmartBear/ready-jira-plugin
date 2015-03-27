@@ -22,6 +22,7 @@ public class JiraPrefsFactory implements Prefs {
     public SimpleForm getForm() {
         if (form == null) {
             form = new SimpleForm();
+            form.addSpace();
             form.appendTextField(BUG_TRACKER_LOGIN, BUG_TRACKER_LOGIN_DESCRIPTION);
             form.appendPasswordField(BUG_TRACKER_PASSWORD, BUG_TRACKER_PASSWORD_DESCRIPTION);
             form.appendTextField(BUG_TRACKER_URL, BUG_TRACKER_URL_DESCRIPTION);

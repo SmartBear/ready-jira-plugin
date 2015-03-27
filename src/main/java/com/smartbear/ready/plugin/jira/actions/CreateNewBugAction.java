@@ -195,7 +195,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 selectedIssueType = newValue;
             }
         });
-        return builder.buildDialog(builder.buildOkCancelActions(), "Please enter the required project and issue type", null);
+        return builder.buildDialog(builder.buildOkCancelActions(), "Please choose the required project and issue type", null);
     }
 
     @Override
