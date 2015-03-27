@@ -266,7 +266,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return new JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>>(projectFields);
     }
 
-    public Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*FieldName*/, CimFieldInfo>>> getProjectRequiredFields(){
+    public Map<String,Map<String, Map<String, CimFieldInfo>>> getProjectRequiredFields(){
         List<String> allProjectsList = getListOfAllProjects();
         List<String> uncachedProjectsList = new ArrayList<>();
         for (String project:allProjectsList){

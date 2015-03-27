@@ -153,7 +153,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 for (Map.Entry<String, CimFieldInfo> field:fields.entrySet()){
                     String dialogFieldName = project.getKey() + issueType.getKey() + field.getKey();
                     XFormField currentField = baseDialog.getFormField(dialogFieldName);
-                    currentField.setVisible(selectedProject.equals(project.getKey()) && selectedIssueType.equals(issueType.getKey()));
+                    boolean isVisible = selectedProject.equals(project.getKey()) && selectedIssueType.equals(issueType.getKey());
+                    currentField.setVisible(isVisible);
                 }
             }
         }
@@ -167,7 +168,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 Map<String, CimFieldInfo> fields = issueType.getValue();
                 for (Map.Entry<String, CimFieldInfo> field:fields.entrySet()){
                     String key = field.getKey();
-                    String dialogFieldName = project.getKey() + issueType.getKey() + field.getKey();
+                    String dialogFieldName = project.getKey() + issueType.getKey() + key;
+                    boolean isVisible = selectedProject.equals(project.getKey()) && selectedIssueType.equals(issueType.getKey());
                     if (key.equals("summary") || key.equals("project") || key.equals("issuetype") || key.equals("description")){
                         continue;
                     }
@@ -176,14 +178,14 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                         Object [] values = Utils.IterableValuesToArray(fieldInfo.getAllowedValues());
                         if (values.length > 0) {
                             XFormOptionsField addedField = baseDialog.addComboBox(dialogFieldName, values, fieldInfo.getName());
-                            addedField.setVisible(selectedProject.equals(project.getKey()) && selectedIssueType.equals(issueType.getKey()));
+                            addedField.setVisible(isVisible);
                         } else {
                             XFormTextField addedField = baseDialog.addTextField(dialogFieldName, fieldInfo.getName(), XForm.FieldType.TEXT);
-                            addedField.setVisible(selectedProject.equals(project.getKey()) && selectedIssueType.equals(issueType.getKey()));
+                            addedField.setVisible(isVisible);
                         }
                     } else {
                         XFormTextField addedField = baseDialog.addTextField(dialogFieldName, fieldInfo.getName(), XForm.FieldType.TEXT);
-                        addedField.setVisible(selectedProject.equals(project.getKey()) && selectedIssueType.equals(issueType.getKey()));
+                        addedField.setVisible(isVisible);
                     }
                 }
             }
