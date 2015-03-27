@@ -173,15 +173,12 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                     Object[] values = Utils.IterableValuesToArray(fieldInfo.getAllowedValues());
                     if (values.length > 0) {
                         XFormOptionsField combo = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
-                        //combo.setRequired(true, "");
                     } else {
                         XFormTextField textField = baseDialog.addTextField(fieldInfo.getName(), field.getKey(), XForm.FieldType.TEXT);
-                        //textField.setRequired(true, "");
                     }
                 }
             } else {
                 XFormTextField textField = baseDialog.addTextField(fieldInfo.getName(), field.getKey(), XForm.FieldType.TEXT);
-                //textField.setRequired(true, "");
             }
         }
     }

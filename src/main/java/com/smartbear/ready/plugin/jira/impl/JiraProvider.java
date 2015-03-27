@@ -59,7 +59,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     private BugTrackerSettings bugTrackerSettings;
     static private JiraProvider instance = null;
 
-    //Properties below exist for reducing number of Jira API calls since it's very greedy operation
+    //Properties below exist for reducing number of Jira API calls since every call is very greedy operation
     Iterable<BasicProject> allProjects = null;
     Map<String, Project> requestedProjects = new HashMap<>();
     Iterable<Priority> priorities = null;
@@ -91,10 +91,6 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             logger.error("Incorrectly specified bug tracker URI.");
             UISupport.showErrorMessage("Incorrectly specified bug tracker URI.");
         }
-    }
-
-    public String getName() {
-        return "Jira Bug Tracker provider";
     }
 
     private JiraApiCallResult<Iterable<BasicProject>> getAllProjects() {
@@ -223,13 +219,12 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     }
 
     public Iterable<BasicComponent> getProjectComponents (String projectKey){
-        try {
-            return restClient.getProjectClient().getProject(projectKey).get().getComponents();
-        } catch (InterruptedException e) {
-            return null;
-        } catch (ExecutionException e) {
+        JiraApiCallResult<Project> projectResult = getProjectByKey(projectKey);
+        if (!projectResult.isSuccess()) {
             return null;
         }
+
+        return projectResult.getResult().getComponents();
     }
 
     public Object[] getProjectComponentNames (String projectKey){
@@ -255,19 +250,19 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return null;
     }
 
-    private JiraApiCallResult<Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*Field Name*/, CimFieldInfo>>>> getProjectFields (String ... projects){
-        List<String> uncachedProjectsList = new ArrayList<>();
+    private JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> getProjectFields (String ... projects){
+        List<String> unCachedProjectsList = new ArrayList<>();
         for (String project:projects){
             if (!projectFields.containsKey(project)){
-                uncachedProjectsList.add(project);
+                unCachedProjectsList.add(project);
             }
         }
-        if (uncachedProjectsList.size() > 0) {
-            String [] uncachedProjectsArray = new String[uncachedProjectsList.size()];
-            uncachedProjectsList.toArray(uncachedProjectsArray);
+        if (unCachedProjectsList.size() > 0) {
+            String [] uncachedProjectsArray = new String[unCachedProjectsList.size()];
+            unCachedProjectsList.toArray(uncachedProjectsArray);
             GetCreateIssueMetadataOptions options = new GetCreateIssueMetadataOptionsBuilder()
                     .withExpandedIssueTypesFields()
-                    .withProjectKeys(uncachedProjectsList.toArray(uncachedProjectsArray))
+                    .withProjectKeys(unCachedProjectsList.toArray(uncachedProjectsArray))
                     .build();
             try {
                 Iterable<CimProject> cimProjects = restClient.getIssueClient().getCreateIssueMetadata(options).get();
@@ -316,7 +311,6 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     @Override
     public IssueCreationResult createIssue(String projectKey, String issueKey, String priority, String summary, String description, Map<String, String> extraRequiredValues) {
         //https://bitbucket.org/atlassian/jira-rest-java-client/src/75a64c9d81aad7d8bd9beb11e098148407b13cae/test/src/test/java/samples/Example1.java?at=master
-        //http://www.restapitutorial.com/httpstatuscodes.html
         if (restClient == null) {
             return new IssueCreationResult("Incorrectly specified bug tracker URI.");//TODO: correct message
         }
