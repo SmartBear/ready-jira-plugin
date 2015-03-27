@@ -11,11 +11,11 @@ import javax.swing.JPanel;
  * Created by avdeev on 25.03.2015.
  */
 public class IssueInfoDialog {
-    public static int showDialog(String issueType, String link, String issueKey) {
-        return JOptionPane.showConfirmDialog(null,
+    public static void showDialog(String issueType, String link, String issueKey) {
+        JOptionPane.showMessageDialog(null,
                 getPanel(issueType, link, issueKey),
                 issueKey,
-                JOptionPane.OK_OPTION);//TODO: strange, but it doesn't work properly.
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     private static JPanel getPanel(String issueType, String link, String issueKey) {
