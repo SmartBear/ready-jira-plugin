@@ -65,23 +65,23 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             UISupport.showErrorMessage("No available Jira projects.");
             return;
         }
-        dialogOne = createFirstDialog(bugTrackerProvider);
+        dialogOne = createInitialSetupDialog(bugTrackerProvider);
         if (dialogOne.show()) {
-            dialogTwo = createSecondDialog(bugTrackerProvider, selectedProject, selectedIssueType);
+            dialogTwo = createIssueDetailsDialog(bugTrackerProvider, selectedProject, selectedIssueType);
             if (dialogTwo.show()) {
-                createIssue(bugTrackerProvider);
+                handleOkAction(bugTrackerProvider);
             }
         }
     }
 
     private class JiraIssueCreatorWorker implements Worker{
-        JiraProvider bugTrackerProvider;
-        String projectKey;
-        String issueType;
-        String priority;
-        String summary;
-        String description;
-        Map<String, String> extraValues;
+        final JiraProvider bugTrackerProvider;
+        final String projectKey;
+        final String issueType;
+        final String priority;
+        final String summary;
+        final String description;
+        final Map<String, String> extraValues;
         IssueCreationResult result;
         public JiraIssueCreatorWorker(JiraProvider bugTrackerProvider, String projectKey, String issueType, String priority, String summary, String description, Map<String, String> extraValues){
             this.bugTrackerProvider = bugTrackerProvider;
@@ -114,9 +114,9 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     }
 
     private class JiraIssueAttachmentWorker implements Worker {
-        JiraProvider bugTrackerProvider;
-        IssueCreationResult creationResult;
-        XFormDialog issueDetails;
+        final JiraProvider bugTrackerProvider;
+        final IssueCreationResult creationResult;
+        final XFormDialog issueDetails;
         StringBuilder resultError;
         boolean isAttachmentSuccess;
         public JiraIssueAttachmentWorker (JiraProvider bugTrackerProvider, IssueCreationResult creationResult, XFormDialog issueDetails){
@@ -179,7 +179,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    private void createIssue(JiraProvider bugTrackerProvider) {
+    private void handleOkAction(JiraProvider bugTrackerProvider) {
         StringToStringMap values = dialogTwo.getValues();
         String summary = values.get(BugInfoDialogConsts.ISSUE_SUMMARY, null);
         String description = values.get(BugInfoDialogConsts.ISSUE_DESCRIPTION, null);
@@ -289,7 +289,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    private XFormDialog createSecondDialog(final JiraProvider bugTrackerProvider, final String selectedProject, final String selectedIssueType) {
+    private XFormDialog createIssueDetailsDialog(final JiraProvider bugTrackerProvider, final String selectedProject, final String selectedIssueType) {
         RequiredFieldsWorker worker = new RequiredFieldsWorker(bugTrackerProvider, selectedProject, selectedIssueType);
         XProgressDialog readingProjectSettingsProgressDialog = UISupport.getDialogs().createProgressDialog("Reading Jira settings for selected project and issue type", 100, "Please wait", false);
         try {
@@ -300,7 +300,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     }
 
     private class InitialDialogWorker implements Worker {
-        JiraProvider bugTrackerProvider;
+        final JiraProvider bugTrackerProvider;
         XFormDialog dialog;
 
         public InitialDialogWorker (JiraProvider bugTrackerProvider){
@@ -353,7 +353,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    private XFormDialog createFirstDialog(final JiraProvider bugTrackerProvider) {
+    private XFormDialog createInitialSetupDialog(final JiraProvider bugTrackerProvider) {
         InitialDialogWorker worker = new InitialDialogWorker(bugTrackerProvider);
         XProgressDialog readInitialInfoProgressDialog = UISupport.getDialogs().createProgressDialog("Reading Jira settings", 100, "Please wait", false);
         try {
