@@ -11,6 +11,9 @@ import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.action.support.AbstractSoapUIAction;
 import com.eviware.soapui.support.types.StringToStringMap;
+import com.eviware.x.dialogs.Worker;
+import com.eviware.x.dialogs.XProgressDialog;
+import com.eviware.x.dialogs.XProgressMonitor;
 import com.eviware.x.form.XForm;
 import com.eviware.x.form.XFormDialog;
 import com.eviware.x.form.XFormDialogBuilder;
@@ -71,26 +74,62 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    private void createIssue(JiraProvider bugTrackerProvider) {
-        StringToStringMap values = dialogTwo.getValues();
-        String summary = values.get(BugInfoDialogConsts.ISSUE_SUMMARY, null);
-        String description = values.get(BugInfoDialogConsts.ISSUE_DESCRIPTION, null);
-        String projectKey = selectedProject;
-        String issueType = selectedIssueType;
-        String priority = values.get(BugInfoDialogConsts.ISSUE_PRIORITY, null);
-        Map<String, String> extraValues = new HashMap<String, String>();
-        for (Map.Entry<String, CimFieldInfo> entry : bugTrackerProvider.getProjectRequiredFields(projectKey).get(projectKey).get(issueType).entrySet()) {
-            String key = entry.getKey();
-            if (skippedFieldKeys.contains(key)) {
-                continue;
-            }
-            extraValues.put(entry.getKey(), values.get(entry.getValue().getName()));
+    private class JiraIssueCreatorWorker implements Worker{
+        JiraProvider bugTrackerProvider;
+        String projectKey;
+        String issueType;
+        String priority;
+        String summary;
+        String description;
+        Map<String, String> extraValues;
+        IssueCreationResult result;
+        public JiraIssueCreatorWorker(JiraProvider bugTrackerProvider, String projectKey, String issueType, String priority, String summary, String description, Map<String, String> extraValues){
+            this.bugTrackerProvider = bugTrackerProvider;
+            this.projectKey = projectKey;
+            this.issueType = issueType;
+            this.priority = priority;
+            this.summary = summary;
+            this.description = description;
+            this.extraValues = extraValues;
         }
-        IssueCreationResult result = bugTrackerProvider.createIssue(projectKey, issueType, priority, summary, description, extraValues);
-        if (result.getSuccess()) {
-            boolean isAttachmentSuccess = true;
-            URI newIssueAttachURI = bugTrackerProvider.getIssue(result.getIssue().getKey()).getAttachmentsUri();
-            StringBuilder resultError = new StringBuilder();
+
+        @Override
+        public Object construct(XProgressMonitor xProgressMonitor) {
+            result = bugTrackerProvider.createIssue(projectKey, issueType, priority, summary, description, extraValues);
+            return result;
+        }
+
+        @Override
+        public void finished() {
+        }
+
+        @Override
+        public boolean onCancel() {
+            return false;
+        }
+
+        public IssueCreationResult getResult () {
+            return result;
+        }
+    }
+
+    private class JiraIssueAttachmentWorker implements Worker {
+        JiraProvider bugTrackerProvider;
+        IssueCreationResult creationResult;
+        XFormDialog issueDetails;
+        StringBuilder resultError;
+        boolean isAttachmentSuccess;
+        public JiraIssueAttachmentWorker (JiraProvider bugTrackerProvider, IssueCreationResult creationResult, XFormDialog issueDetails){
+            this.bugTrackerProvider = bugTrackerProvider;
+            this.creationResult = creationResult;
+            this.issueDetails = issueDetails;
+        }
+
+        @Override
+        public Object construct(XProgressMonitor xProgressMonitor) {
+            isAttachmentSuccess = true;
+            URI newIssueAttachURI = bugTrackerProvider.getIssue(creationResult.getIssue().getKey()).getAttachmentsUri();
+            resultError = new StringBuilder();
             if (dialogTwo.getBooleanValue(BugInfoDialogConsts.ATTACH_SOAPUI_LOG)) {
                 AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerProvider.getActiveItemName() + ".log", bugTrackerProvider.getSoapUIExecutionLog());
                 if (!attachResult.getSuccess()) {
@@ -118,8 +157,60 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 }
             }
 
-            if (!isAttachmentSuccess) {
-                UISupport.showErrorMessage(resultError.toString());
+            return resultError;
+        }
+
+        @Override
+        public void finished() {
+
+        }
+
+        @Override
+        public boolean onCancel() {
+            return false;
+        }
+
+        public boolean getAttachmentSuccess(){
+            return isAttachmentSuccess;
+        }
+
+        public StringBuilder getResultError (){
+            return resultError;
+        }
+    }
+
+    private void createIssue(JiraProvider bugTrackerProvider) {
+        StringToStringMap values = dialogTwo.getValues();
+        String summary = values.get(BugInfoDialogConsts.ISSUE_SUMMARY, null);
+        String description = values.get(BugInfoDialogConsts.ISSUE_DESCRIPTION, null);
+        String projectKey = selectedProject;
+        String issueType = selectedIssueType;
+        String priority = values.get(BugInfoDialogConsts.ISSUE_PRIORITY, null);
+        Map<String, String> extraValues = new HashMap<String, String>();
+        for (Map.Entry<String, CimFieldInfo> entry : bugTrackerProvider.getProjectRequiredFields(projectKey).get(projectKey).get(issueType).entrySet()) {
+            String key = entry.getKey();
+            if (skippedFieldKeys.contains(key)) {
+                continue;
+            }
+            extraValues.put(entry.getKey(), values.get(entry.getValue().getName()));
+        }
+        XProgressDialog issueCreationProgressDialog = UISupport.getDialogs().createProgressDialog("Creating new Jira issue", 100, "Please wait", false);
+        JiraIssueCreatorWorker worker = new JiraIssueCreatorWorker(bugTrackerProvider, projectKey, issueType, priority, summary, description, extraValues);
+        try {
+            issueCreationProgressDialog.run(worker);
+        } catch (Exception e) {
+        }
+        IssueCreationResult result = worker.getResult();
+        if (result.getSuccess()) {
+            JiraIssueAttachmentWorker attachmentWorker = new JiraIssueAttachmentWorker(bugTrackerProvider, result, dialogTwo);
+            XProgressDialog addingAttachmentProgressDialog = UISupport.getDialogs().createProgressDialog("Adding attachment/attachments", 100, "Please wait", false);
+            try {
+                addingAttachmentProgressDialog.run(attachmentWorker);
+            } catch (Exception e) {
+            }
+
+            if (!attachmentWorker.getAttachmentSuccess()) {
+                UISupport.showErrorMessage(attachmentWorker.getResultError().toString());
             } else {
                 IssueInfoDialog.showDialog(issueType, bugTrackerProvider.getBugTrackerSettings().getUrl().concat("/browse/").concat(result.getIssue().getKey()), result.getIssue().getKey());//TODO: make link correct for all cases
             }
