@@ -246,47 +246,122 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
+    private class RequiredFieldsWorker implements Worker{
+        final JiraProvider bugTrackerProvider;
+        final String selectedProject;
+        final String selectedIssueType;
+        XFormDialog dialog;
+
+        public RequiredFieldsWorker (JiraProvider bugTrackerProvider, String selectedProject, String selectedIssueType){
+            this.selectedProject = selectedProject;
+            this.selectedIssueType = selectedIssueType;
+            this.bugTrackerProvider = bugTrackerProvider;
+        }
+
+        @Override
+        public Object construct(XProgressMonitor xProgressMonitor) {
+            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION);
+            XForm form = builder.createForm("Basic");
+            String selectedPriority = (String) bugTrackerProvider.getListOfPriorities().toArray()[0];
+            form.addComboBox(BugInfoDialogConsts.ISSUE_PRIORITY, bugTrackerProvider.getListOfPriorities().toArray(), selectedPriority);
+            form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, "Issue summary", XForm.FieldType.TEXT);
+            form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, "Issue description", XForm.FieldType.TEXTAREA);
+            addExtraRequiredFields(form, bugTrackerProvider, selectedProject, selectedIssueType);
+            form.addCheckBox(BugInfoDialogConsts.ATTACH_SOAPUI_LOG, "");
+            form.addCheckBox(BugInfoDialogConsts.ATTACH_PROJECT, "");
+            form.addTextField(BugInfoDialogConsts.ATTACH_ANY_FILE, "Attach file", XForm.FieldType.FILE);
+            dialog = builder.buildDialog(builder.buildOkCancelActions(), "Please specify issue options", null);
+            return dialog;
+        }
+
+        @Override
+        public void finished() {
+
+        }
+
+        @Override
+        public boolean onCancel() {
+            return false;
+        }
+
+        public XFormDialog getDialog (){
+            return dialog;
+        }
+    }
+
     private XFormDialog createSecondDialog(final JiraProvider bugTrackerProvider, final String selectedProject, final String selectedIssueType) {
-        XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION);
-        XForm form = builder.createForm("Basic");
-        String selectedPriority = (String) bugTrackerProvider.getListOfPriorities().toArray()[0];
-        form.addComboBox(BugInfoDialogConsts.ISSUE_PRIORITY, bugTrackerProvider.getListOfPriorities().toArray(), selectedPriority);
-        form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, "Issue summary", XForm.FieldType.TEXT);
-        form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, "Issue description", XForm.FieldType.TEXTAREA);
-        addExtraRequiredFields(form, bugTrackerProvider, selectedProject, selectedIssueType);
-        form.addCheckBox(BugInfoDialogConsts.ATTACH_SOAPUI_LOG, "");
-        form.addCheckBox(BugInfoDialogConsts.ATTACH_PROJECT, "");
-        form.addTextField(BugInfoDialogConsts.ATTACH_ANY_FILE, "Attach file", XForm.FieldType.FILE);
-        return builder.buildDialog(builder.buildOkCancelActions(), "Please specify issue options", null);
+        RequiredFieldsWorker worker = new RequiredFieldsWorker(bugTrackerProvider, selectedProject, selectedIssueType);
+        XProgressDialog readingProjectSettingsProgressDialog = UISupport.getDialogs().createProgressDialog("Reading Jira settings for selected project and issue type", 100, "Please wait", false);
+        try {
+            readingProjectSettingsProgressDialog.run(worker);
+        } catch (Exception e) {
+        }
+        return worker.getDialog();
+    }
+
+    private class InitialDialogWorker implements Worker {
+        JiraProvider bugTrackerProvider;
+        XFormDialog dialog;
+
+        public InitialDialogWorker (JiraProvider bugTrackerProvider){
+            this.bugTrackerProvider = bugTrackerProvider;
+        }
+
+        @Override
+        public Object construct(XProgressMonitor xProgressMonitor) {
+            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION);
+            XForm form = builder.createForm("Basic");
+            List<String> allProjectsList = bugTrackerProvider.getListOfAllProjects();
+            XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT, allProjectsList.toArray(), BugInfoDialogConsts.TARGET_ISSUE_PROJECT);
+            if (StringUtils.isNullOrEmpty(selectedProject)) {
+                selectedProject = (String) (allProjectsList.toArray()[0]);
+            }
+            projectsCombo.setValue(selectedProject);
+            projectsCombo.addFormFieldListener(new XFormFieldListener() {
+                @Override
+                public void valueChanged(XFormField xFormField, String newValue, String oldValue) {
+                    selectedProject = newValue;
+                }
+            });
+            if (StringUtils.isNullOrEmpty(selectedIssueType)) {
+                selectedIssueType = (String) bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray()[0];
+            }
+            XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE, bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray(), BugInfoDialogConsts.ISSUE_TYPE);
+            issueTypesCombo.setValue(selectedIssueType);
+            issueTypesCombo.addFormFieldListener(new XFormFieldListener() {
+                @Override
+                public void valueChanged(XFormField xFormField, String newValue, String oldValue) {
+                    selectedIssueType = newValue;
+                }
+            });
+            dialog = builder.buildDialog(builder.buildOkCancelActions(), "Please choose the required project and issue type", null);
+            return dialog;
+        }
+
+        @Override
+        public void finished() {
+
+        }
+
+        @Override
+        public boolean onCancel() {
+            return false;
+        }
+
+        public XFormDialog getDialog (){
+            return dialog;
+        }
     }
 
     private XFormDialog createFirstDialog(final JiraProvider bugTrackerProvider) {
-        XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION);
-        XForm form = builder.createForm("Basic");
-        List<String> allProjectsList = bugTrackerProvider.getListOfAllProjects();
-        XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT, allProjectsList.toArray(), BugInfoDialogConsts.TARGET_ISSUE_PROJECT);
-        if (StringUtils.isNullOrEmpty(selectedProject)) {
-            selectedProject = (String) (allProjectsList.toArray()[0]);
+        InitialDialogWorker worker = new InitialDialogWorker(bugTrackerProvider);
+        XProgressDialog readInitialInfoProgressDialog = UISupport.getDialogs().createProgressDialog("Reading Jira settings", 100, "Please wait", false);
+        try {
+            readInitialInfoProgressDialog.run(worker);
+        } catch (Exception e) {
         }
-        projectsCombo.setValue(selectedProject);
-        projectsCombo.addFormFieldListener(new XFormFieldListener() {
-            @Override
-            public void valueChanged(XFormField xFormField, String newValue, String oldValue) {
-                selectedProject = newValue;
-            }
-        });
-        if (StringUtils.isNullOrEmpty(selectedIssueType)) {
-            selectedIssueType = (String) bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray()[0];
-        }
-        XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE, bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray(), BugInfoDialogConsts.ISSUE_TYPE);
-        issueTypesCombo.setValue(selectedIssueType);
-        issueTypesCombo.addFormFieldListener(new XFormFieldListener() {
-            @Override
-            public void valueChanged(XFormField xFormField, String newValue, String oldValue) {
-                selectedIssueType = newValue;
-            }
-        });
-        return builder.buildDialog(builder.buildOkCancelActions(), "Please choose the required project and issue type", null);
+
+        return worker.getDialog();
     }
 
     @Override
