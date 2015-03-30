@@ -24,6 +24,8 @@ import com.eviware.x.form.XFormOptionsField;
 import com.eviware.x.form.XFormTextField;
 import com.google.inject.Inject;
 import com.smartbear.ready.functional.actions.FunctionalActionGroups;
+import com.smartbear.ready.license.annotation.ClassRequiresLicense;
+import com.smartbear.ready.license.protection.LicensedModule;
 import com.smartbear.ready.plugin.jira.dialog.BugInfoDialogConsts;
 import com.smartbear.ready.plugin.jira.impl.AttachmentAddingResult;
 import com.smartbear.ready.plugin.jira.impl.IssueCreationResult;
@@ -39,10 +41,9 @@ import java.util.Map;
 
 @ActionConfiguration(actionGroup = FunctionalActionGroups.FUNCTIONAL_MODULE_TOOLBAR_ACTIONS, targetType = ModelItem.class, isToolbarAction = true,
         iconPath = "com/smartbear/ready/plugin/jira/icons/Create-new-bug-tracker-issue-icon_20-20-px.png")
+@ClassRequiresLicense(validModules = LicensedModule.SoapUIPro)
 public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     private static String NEW_ISSUE_DIALOG_CAPTION = "Create new Jira issue";
-    private XFormDialog dialogOne;
-    private XFormDialog dialogTwo;
     String selectedProject, selectedIssueType;
 
     private static final List<String> skippedFieldKeys = Arrays.asList("summary", "project", "issuetype", "description");
@@ -65,11 +66,11 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             UISupport.showErrorMessage("No available Jira projects.");
             return;
         }
-        dialogOne = createInitialSetupDialog(bugTrackerProvider);
+        XFormDialog dialogOne = createInitialSetupDialog(bugTrackerProvider);
         if (dialogOne.show()) {
-            dialogTwo = createIssueDetailsDialog(bugTrackerProvider, selectedProject, selectedIssueType);
+            XFormDialog dialogTwo = createIssueDetailsDialog(bugTrackerProvider, selectedProject, selectedIssueType);
             if (dialogTwo.show()) {
-                handleOkAction(bugTrackerProvider);
+                handleOkAction(bugTrackerProvider, dialogTwo);
             }
         }
     }
@@ -130,7 +131,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             isAttachmentSuccess = true;
             URI newIssueAttachURI = bugTrackerProvider.getIssue(creationResult.getIssue().getKey()).getAttachmentsUri();
             resultError = new StringBuilder();
-            if (dialogTwo.getBooleanValue(BugInfoDialogConsts.ATTACH_SOAPUI_LOG)) {
+            if (issueDetails.getBooleanValue(BugInfoDialogConsts.ATTACH_SOAPUI_LOG)) {
                 AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerProvider.getActiveItemName() + ".log", bugTrackerProvider.getSoapUIExecutionLog());
                 if (!attachResult.getSuccess()) {
                     isAttachmentSuccess = false;
@@ -139,7 +140,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 }
             }
 
-            if (dialogTwo.getBooleanValue(BugInfoDialogConsts.ATTACH_PROJECT)) {
+            if (issueDetails.getBooleanValue(BugInfoDialogConsts.ATTACH_PROJECT)) {
                 AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerProvider.getRootProjectName() + ".xml", bugTrackerProvider.getRootProject());
                 if (!attachResult.getSuccess()) {
                     isAttachmentSuccess = false;
@@ -148,8 +149,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 }
             }
 
-            String attachAnyFileValue = dialogTwo.getValue(BugInfoDialogConsts.ATTACH_ANY_FILE);
-            if (!StringUtils.isNullOrEmpty(dialogTwo.getValue(BugInfoDialogConsts.ATTACH_ANY_FILE))) {
+            String attachAnyFileValue = issueDetails.getValue(BugInfoDialogConsts.ATTACH_ANY_FILE);
+            if (!StringUtils.isNullOrEmpty(issueDetails.getValue(BugInfoDialogConsts.ATTACH_ANY_FILE))) {
                 AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, attachAnyFileValue);
                 if (!attachResult.getSuccess()) {
                     isAttachmentSuccess = false;
@@ -179,8 +180,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    private void handleOkAction(JiraProvider bugTrackerProvider) {
-        StringToStringMap values = dialogTwo.getValues();
+    private void handleOkAction(JiraProvider bugTrackerProvider, XFormDialog issueDetails) {
+        StringToStringMap values = issueDetails.getValues();
         String summary = values.get(BugInfoDialogConsts.ISSUE_SUMMARY, null);
         String description = values.get(BugInfoDialogConsts.ISSUE_DESCRIPTION, null);
         String projectKey = selectedProject;
@@ -202,7 +203,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
         IssueCreationResult result = worker.getResult();
         if (result.getSuccess()) {
-            JiraIssueAttachmentWorker attachmentWorker = new JiraIssueAttachmentWorker(bugTrackerProvider, result, dialogTwo);
+            JiraIssueAttachmentWorker attachmentWorker = new JiraIssueAttachmentWorker(bugTrackerProvider, result, issueDetails);
             XProgressDialog addingAttachmentProgressDialog = UISupport.getDialogs().createProgressDialog("Adding attachment/attachments", 100, "Please wait", false);
             try {
                 addingAttachmentProgressDialog.run(attachmentWorker);
