@@ -7,6 +7,7 @@ import com.eviware.soapui.model.ModelItem;
 import com.eviware.soapui.model.testsuite.TestCase;
 import com.eviware.soapui.model.testsuite.TestStep;
 import com.eviware.soapui.model.testsuite.TestSuite;
+import com.eviware.soapui.model.workspace.Workspace;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.action.support.AbstractSoapUIAction;
@@ -52,6 +53,10 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         JiraProvider bugTrackerProvider = JiraProvider.getProvider();
         if (!bugTrackerProvider.settingsComplete()) {
             UISupport.showErrorMessage("Bug tracker settings are not completely specified.");
+            return;
+        }
+        if (target instanceof Workspace){
+            UISupport.showErrorMessage("Workspace item selected. Please choose another navigator tree item.");
             return;
         }
         bugTrackerProvider.setActiveItem(target);//TODO: check if it's really target
