@@ -135,6 +135,7 @@
                 <exclude>*:*gshell*</exclude>
                 <exclude>*:*joda*</exclude>
                 <exclude>*:*jdtcore*</exclude>
+                <exclude>*:*loadui*</exclude>
             </excludes>
         </dependencySet>
         <dependencySet>

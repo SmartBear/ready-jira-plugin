@@ -6,7 +6,6 @@ import com.eviware.soapui.model.ModelItem;
 import com.eviware.soapui.model.testsuite.TestCase;
 import com.eviware.soapui.model.testsuite.TestStep;
 import com.eviware.soapui.model.testsuite.TestSuite;
-import com.eviware.soapui.plugins.ActionConfiguration;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.action.support.AbstractSoapUIAction;
@@ -23,9 +22,6 @@ import com.eviware.x.form.XFormFieldListener;
 import com.eviware.x.form.XFormOptionsField;
 import com.eviware.x.form.XFormTextField;
 import com.google.inject.Inject;
-import com.smartbear.ready.functional.actions.FunctionalActionGroups;
-import com.smartbear.ready.license.annotation.ClassRequiresLicense;
-import com.smartbear.ready.license.protection.LicensedModule;
 import com.smartbear.ready.plugin.jira.dialog.BugInfoDialogConsts;
 import com.smartbear.ready.plugin.jira.impl.AttachmentAddingResult;
 import com.smartbear.ready.plugin.jira.impl.IssueCreationResult;
@@ -39,12 +35,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@ActionConfiguration(actionGroup = FunctionalActionGroups.FUNCTIONAL_MODULE_TOOLBAR_ACTIONS, targetType = ModelItem.class, isToolbarAction = true,
-        iconPath = "com/smartbear/ready/plugin/jira/icons/Create-new-bug-tracker-issue-icon_20-20-px.png")
-@ClassRequiresLicense(validModules = LicensedModule.SoapUIPro)
 public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
-    private static String NEW_ISSUE_DIALOG_CAPTION = "Create new Jira issue";
-    String selectedProject, selectedIssueType;
+    protected static String NEW_ISSUE_DIALOG_CAPTION = "Create new Jira issue";
+    protected String selectedProject, selectedIssueType;
 
     private static final List<String> skippedFieldKeys = Arrays.asList("summary", "project", "issuetype", "description");
 
