@@ -1,5 +1,6 @@
 package com.smartbear.ready.plugin.jira.actions;
 
+import com.atlassian.jira.rest.client.api.domain.BasicComponent;
 import com.atlassian.jira.rest.client.api.domain.CimFieldInfo;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.model.ModelItem;
@@ -27,9 +28,9 @@ import com.smartbear.ready.plugin.jira.impl.AttachmentAddingResult;
 import com.smartbear.ready.plugin.jira.impl.IssueCreationResult;
 import com.smartbear.ready.plugin.jira.impl.IssueInfoDialog;
 import com.smartbear.ready.plugin.jira.impl.JiraProvider;
-import com.smartbear.ready.plugin.jira.impl.Utils;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -214,6 +215,16 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
+    public static Object[] IterableBasicComponentsToNameArray(Iterable<Object> input){
+        ArrayList<Object> objects = new ArrayList<>();
+        for (Object obj:input){
+            if (obj instanceof BasicComponent) {
+                objects.add(((BasicComponent) obj).getName());
+            }
+        }
+        return objects.toArray();
+    }
+
     private void addExtraRequiredFields(XForm baseDialog, JiraProvider bugTrackerProvider, String selectedProject, String selectedIssueType) {
         Map<String, Map<String, Map<String, CimFieldInfo>>> allRequiredFields = bugTrackerProvider.getProjectRequiredFields(selectedProject);
         for (Map.Entry<String, CimFieldInfo> field : allRequiredFields.get(selectedProject).get(selectedIssueType).entrySet()) {
@@ -227,7 +238,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                     Object[] components = bugTrackerProvider.getProjectComponentNames(selectedProject);
                     XFormOptionsField combo = baseDialog.addComboBox(fieldInfo.getName(), components, fieldInfo.getName());
                 } else {
-                    Object[] values = Utils.IterableValuesToArray(fieldInfo.getAllowedValues());
+                    Object[] values = IterableBasicComponentsToNameArray(fieldInfo.getAllowedValues());
                     if (values.length > 0) {
                         XFormOptionsField combo = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
                     } else {
