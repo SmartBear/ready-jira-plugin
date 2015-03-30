@@ -198,7 +198,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         IssueCreationResult result = worker.getResult();
         if (result.getSuccess()) {
             JiraIssueAttachmentWorker attachmentWorker = new JiraIssueAttachmentWorker(bugTrackerProvider, result, issueDetails);
-            XProgressDialog addingAttachmentProgressDialog = UISupport.getDialogs().createProgressDialog("Adding attachment/attachments", 100, "Please wait", false);
+            XProgressDialog addingAttachmentProgressDialog = UISupport.getDialogs().createProgressDialog("Adding attachments", 100, "Please wait", false);
             try {
                 addingAttachmentProgressDialog.run(attachmentWorker);
             } catch (Exception e) {
