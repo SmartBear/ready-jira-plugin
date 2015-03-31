@@ -5,6 +5,7 @@ import com.atlassian.jira.rest.client.api.GetCreateIssueMetadataOptionsBuilder;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.MetadataRestClient;
 import com.atlassian.jira.rest.client.api.OptionalIterable;
+import com.atlassian.jira.rest.client.api.domain.BasicComponent;
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 import com.atlassian.jira.rest.client.api.domain.BasicProject;
 import com.atlassian.jira.rest.client.api.domain.CimFieldInfo;
@@ -24,9 +25,12 @@ import com.eviware.soapui.model.settings.Settings;
 import com.eviware.soapui.model.support.ModelSupport;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
+import com.eviware.soapui.support.log.JLogList;
 import com.eviware.x.form.XFormField;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerPrefs;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerSettings;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +44,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -58,7 +63,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     private BugTrackerSettings bugTrackerSettings;
     static private JiraProvider instance = null;
 
-    //Properties below exist for reducing number of Jira API calls since it's very greedy operation
+    //Properties below exist for reducing number of Jira API calls since every call is very greedy operation
     Iterable<BasicProject> allProjects = null;
     Map<String, Project> requestedProjects = new HashMap<>();
     Iterable<Priority> priorities = null;
@@ -90,10 +95,6 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             logger.error("Incorrectly specified bug tracker URI.");
             UISupport.showErrorMessage("Incorrectly specified bug tracker URI.");
         }
-    }
-
-    public String getName() {
-        return "Jira Bug Tracker provider";
     }
 
     private JiraApiCallResult<Iterable<BasicProject>> getAllProjects() {
@@ -221,6 +222,26 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return null;
     }
 
+    public Iterable<BasicComponent> getProjectComponents (String projectKey){
+        JiraApiCallResult<Project> projectResult = getProjectByKey(projectKey);
+        if (!projectResult.isSuccess()) {
+            return null;
+        }
+
+        return projectResult.getResult().getComponents();
+    }
+
+    public Object[] getProjectComponentNames (String projectKey){
+        Iterable<BasicComponent> basicComponents = getProjectComponents(projectKey);
+        ArrayList<String> objects = new ArrayList<>();
+        for (BasicComponent obj:basicComponents){
+            objects.add(obj.getName());
+        }
+        Object[] simpleArray = new String[objects.size()];
+        objects.toArray(simpleArray);
+        return simpleArray;
+    }
+
     public Issue getIssue(String key) {
         try {
             return restClient.getIssueClient().getIssue(key).get();
@@ -233,19 +254,19 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return null;
     }
 
-    private JiraApiCallResult<Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*Field Name*/, CimFieldInfo>>>> getProjectFields (String ... projects){
-        List<String> uncachedProjectsList = new ArrayList<>();
+    private JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> getProjectFields (String ... projects){
+        List<String> unCachedProjectsList = new ArrayList<>();
         for (String project:projects){
             if (!projectFields.containsKey(project)){
-                uncachedProjectsList.add(project);
+                unCachedProjectsList.add(project);
             }
         }
-        if (uncachedProjectsList.size() > 0) {
-            String [] uncachedProjectsArray = new String[uncachedProjectsList.size()];
-            uncachedProjectsList.toArray(uncachedProjectsArray);
+        if (unCachedProjectsList.size() > 0) {
+            String [] uncachedProjectsArray = new String[unCachedProjectsList.size()];
+            unCachedProjectsList.toArray(uncachedProjectsArray);
             GetCreateIssueMetadataOptions options = new GetCreateIssueMetadataOptionsBuilder()
                     .withExpandedIssueTypesFields()
-                    .withProjectKeys(uncachedProjectsList.toArray(uncachedProjectsArray))
+                    .withProjectKeys(unCachedProjectsList.toArray(uncachedProjectsArray))
                     .build();
             try {
                 Iterable<CimProject> cimProjects = restClient.getIssueClient().getCreateIssueMetadata(options).get();
@@ -266,25 +287,15 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return new JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>>(projectFields);
     }
 
-    public Map<String,Map<String, Map<String, CimFieldInfo>>> getProjectRequiredFields(){
-        List<String> allProjectsList = getListOfAllProjects();
-        List<String> uncachedProjectsList = new ArrayList<>();
-        for (String project:allProjectsList){
-            if (!allRequiredFields.containsKey(project)){
-                uncachedProjectsList.add(project);
-            }
-        }
-        String [] uncachedProjects = new String [uncachedProjectsList.size()];
-        allProjectsList.toArray(uncachedProjects);
-
-        JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> allProjectFieldsResult = getProjectFields(uncachedProjects);
+    public Map<String,Map<String, Map<String, CimFieldInfo>>> getProjectRequiredFields(String ... projects){
+        JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> allProjectFieldsResult = getProjectFields(projects);
         if (!allProjectFieldsResult.isSuccess()){
             return null;
         }
 
         for (Map.Entry<String,Map<String, Map<String, CimFieldInfo>>> project:allProjectFieldsResult.getResult().entrySet()){
             Map<String, Map<String, CimFieldInfo>> issueTypeFields = project.getValue();
-            Map<String, Map<String/*FieldName*/, CimFieldInfo>> issueTypeRequiredFields = new HashMap<String, Map<String, CimFieldInfo>>();
+            Map<String, Map<String, CimFieldInfo>> issueTypeRequiredFields = new HashMap<String, Map<String, CimFieldInfo>>();
             for (Map.Entry<String, Map<String, CimFieldInfo>> issueType:issueTypeFields.entrySet()){
                 Map<String, CimFieldInfo> fields = issueType.getValue();
                 Map<String, CimFieldInfo> requiredFields = new HashMap<>();
@@ -304,7 +315,6 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     @Override
     public IssueCreationResult createIssue(String projectKey, String issueKey, String priority, String summary, String description, Map<String, String> extraRequiredValues) {
         //https://bitbucket.org/atlassian/jira-rest-java-client/src/75a64c9d81aad7d8bd9beb11e098148407b13cae/test/src/test/java/samples/Example1.java?at=master
-        //http://www.restapitutorial.com/httpstatuscodes.html
         if (restClient == null) {
             return new IssueCreationResult("Incorrectly specified bug tracker URI.");//TODO: correct message
         }
@@ -409,8 +419,26 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return new AttachmentAddingResult();
     }
 
-    public InputStream getSoapUIExecutionLog() {
-        return getExecutionLog("com.eviware.soapui");
+    private InputStream getExecutionLog(String loggerName) {
+        org.apache.log4j.Logger loggerr = org.apache.log4j.Logger.getLogger(loggerName);
+        FileAppender fileAppender = null;
+        Enumeration appenders = loggerr.getRootLogger().getAllAppenders();
+        while (appenders.hasMoreElements()){
+            Appender currentAppender = (Appender)appenders.nextElement();
+            if  (currentAppender instanceof FileAppender){
+                fileAppender = (FileAppender)currentAppender;
+            }
+        }
+
+        if(fileAppender != null){
+            try {
+                return (InputStream) new FileInputStream(fileAppender.getFile());
+            } catch (FileNotFoundException e) {
+                JiraProvider.logger.error(e.getMessage());
+            }
+        }
+
+        return null;
     }
 
     public InputStream getServiceVExecutionLog() {
@@ -433,9 +461,18 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return activeElement.getName();
     }
 
+    public String getRootProjectName() {
+        WsdlProject project = findActiveElementRootProject(activeElement);
+        return project.getName();
+    }
+
     public InputStream getRootProject() {
         WsdlProject project = findActiveElementRootProject(activeElement);
         return new ByteArrayInputStream(project.getConfig().toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    private WsdlProject findActiveElementRootProject(ModelItem activeElement) {
+        return ModelSupport.getModelItemProject(activeElement);
     }
 
     public boolean settingsComplete(BugTrackerSettings settings) {
@@ -458,19 +495,5 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     soapuiSettings.getString(BugTrackerPrefs.PASSWORD, ""));
         }
         return bugTrackerSettings;
-    }
-
-    private WsdlProject findActiveElementRootProject(ModelItem activeElement) {
-        return ModelSupport.getModelItemProject(activeElement);
-    }
-
-    private InputStream getExecutionLog(String loggerName) {
-        org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(loggerName);
-        try {
-            return (InputStream) new FileInputStream(log.getName());
-        } catch (FileNotFoundException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
     }
 }

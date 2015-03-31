@@ -80,6 +80,21 @@
             <version>1.2.2</version>
         </dependency>
         <dependency>
+            <groupId>com.smartbear</groupId>
+            <artifactId>loadui-ui</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.smartbear</groupId>
+            <artifactId>ready-api-security</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.smartbear</groupId>
+            <artifactId>ready-api-service-v</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+        <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-rest-java-client-core</artifactId>
             <version>2.0.0</version>
