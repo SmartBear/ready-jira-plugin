@@ -38,16 +38,16 @@ import java.util.List;
 import java.util.Map;
 
 public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
-    public static final String CREATE_JIRA_ISSUE = "Create Jira issue";
-    public static final String SPECIFIES_THE_REQUIRED_FIELDS_TO_CREATE_NEW_ISSUE_IN_JIRA = "Specifies the required fields to create new issue in Jira";
-    public static final String WORKSPACE_ITEM_SELECTED = "Workspace item selected. Please choose another navigator tree item.";
-    public static final String NO_AVAILABLE_JIRA_PROJECTS = "No available Jira projects.";
-    public static final String CREATING_NEW_JIRA_ISSUE = "Creating new Jira issue";
-    public static final String PLEASE_WAIT = "Please wait";
-    public static final String ADDING_ATTACHMENTS = "Adding attachments";
-    public static final String READING_JIRA_SETTINGS_FOR_SELECTED_PROJECT_AND_ISSUE_TYPE = "Reading Jira settings for selected project and issue type";
-    public static final String READING_JIRA_SETTINGS = "Reading Jira settings";
-    private static String NEW_ISSUE_DIALOG_CAPTION = "Create new Jira issue";
+    /*???*/public static final String CREATE_JIRA_ISSUE = "Create Jira issue";
+    /*???*/public static final String SPECIFIES_THE_REQUIRED_FIELDS_TO_CREATE_NEW_ISSUE_IN_JIRA = "Specifies the required fields to create new issue in Jira";
+    /*???*/public static final String WORKSPACE_ITEM_SELECTED = "Workspace item selected. Please choose another navigator tree item.";
+    /*???*/public static final String NO_AVAILABLE_JIRA_PROJECTS = "No available Jira projects.";
+    /*???*/public static final String CREATING_NEW_JIRA_ISSUE = "Creating new Jira issue";
+    /*???*/public static final String PLEASE_WAIT = "Please wait";
+    /*???*/public static final String ADDING_ATTACHMENTS = "Adding attachments";
+    /*???*/public static final String READING_JIRA_SETTINGS_FOR_SELECTED_PROJECT_AND_ISSUE_TYPE = "Reading Jira settings for selected project and issue type";
+    /*???*/public static final String READING_JIRA_SETTINGS = "Reading Jira settings";
+    /*???*/private static String NEW_ISSUE_DIALOG_CAPTION = "Create new Jira issue";
 
     protected String selectedProject, selectedIssueType;
 
@@ -267,10 +267,10 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     }
 
     private class RequiredFieldsWorker implements Worker{
-        public static final String ISSUE_SUMMARY = "Issue summary";
-        public static final String ISSUE_DESCRIPTION = "Issue description";
-        public static final String ATTACH_FILE = "Attach file";
-        public static final String PLEASE_SPECIFY_ISSUE_OPTIONS = "Please specify issue options";
+        /*???*/public static final String ISSUE_SUMMARY = "Issue summary";
+        /*???*/public static final String ISSUE_DESCRIPTION = "Issue description";
+        /*???*/public static final String ATTACH_FILE = "Attach file";
+        /*???*/public static final String PLEASE_SPECIFY_ISSUE_OPTIONS = "Please specify issue options";
         final JiraProvider bugTrackerProvider;
         final String selectedProject;
         final String selectedIssueType;
@@ -324,6 +324,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     }
 
     private class InitialDialogWorker implements Worker {
+        /*???*/public static final String CHOOSE_REQUIRED_PROJECT_AND_ISSUE_TYPE = "Please choose the required project and issue type";
         final JiraProvider bugTrackerProvider;
         XFormDialog dialog;
 
@@ -358,7 +359,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                     selectedIssueType = newValue;
                 }
             });
-            dialog = builder.buildDialog(builder.buildOkCancelActions(), "Please choose the required project and issue type", null);
+            dialog = builder.buildDialog(builder.buildOkCancelActions(), CHOOSE_REQUIRED_PROJECT_AND_ISSUE_TYPE, null);
             return dialog;
         }
 
