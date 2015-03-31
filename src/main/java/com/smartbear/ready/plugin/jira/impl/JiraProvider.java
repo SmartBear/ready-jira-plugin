@@ -52,11 +52,11 @@ import java.util.concurrent.ExecutionException;
 public class JiraProvider implements SimpleBugTrackerProvider {
     private static final Logger logger = LoggerFactory.getLogger(JiraProvider.class);
 
-    /*???*/private final static String BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED = "Issue key is not specified";
-    /*???*/private final static String BUG_TRACKER_FILE_NAME_NOT_SPECIFIED = "File name is not specified";
-    /*???*/private final static String BUG_TRACKER_INCORRECT_FILE_PATH = "Incorrect file path";
-    /*???*/private final static String BUG_TRACKER_URI_IS_INCORRECT = "Bug tracker URI is incorrect.";
-    /*???*/public static final String BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED = "Bug tracker settings are not completely specified.";
+    private final static String BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED = "No issue key is specified";
+    private final static String BUG_TRACKER_FILE_NAME_NOT_SPECIFIED = "No file name is specified";
+    private final static String BUG_TRACKER_INCORRECT_FILE_PATH = "Incorrect file path";
+    private final static String BUG_TRACKER_URI_IS_INCORRECT = "The bug tracker URI is incorrect.";
+    public static final String BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED = "Not all the bug tracker settings are specified.";
 
     private ModelItem activeElement;
     private JiraRestClient restClient = null;
