@@ -25,9 +25,12 @@ import com.eviware.soapui.model.settings.Settings;
 import com.eviware.soapui.model.support.ModelSupport;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
+import com.eviware.soapui.support.log.JLogList;
 import com.eviware.x.form.XFormField;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerPrefs;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerSettings;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +44,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -416,17 +420,25 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     }
 
     private InputStream getExecutionLog(String loggerName) {
-        org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(loggerName);
-        try {
-            return (InputStream) new FileInputStream(log.getName());
-        } catch (FileNotFoundException e) {
-            logger.error(e.getMessage());
+        org.apache.log4j.Logger loggerr = org.apache.log4j.Logger.getLogger(loggerName);
+        FileAppender fileAppender = null;
+        Enumeration appenders = loggerr.getRootLogger().getAllAppenders();
+        while (appenders.hasMoreElements()){
+            Appender currentAppender = (Appender)appenders.nextElement();
+            if  (currentAppender instanceof FileAppender){
+                fileAppender = (FileAppender)currentAppender;
+            }
         }
-        return null;
-    }
 
-    public InputStream getSoapUIExecutionLog() {
-        return getExecutionLog("com.eviware.soapui");
+        if(fileAppender != null){
+            try {
+                return (InputStream) new FileInputStream(fileAppender.getFile());
+            } catch (FileNotFoundException e) {
+                JiraProvider.logger.error(e.getMessage());
+            }
+        }
+
+        return null;
     }
 
     public InputStream getServiceVExecutionLog() {

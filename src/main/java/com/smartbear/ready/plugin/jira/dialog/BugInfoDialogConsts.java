@@ -18,8 +18,6 @@ public interface BugInfoDialogConsts {
 
     public final static String ISSUE_DESCRIPTION = "Bug description";
 
-    public final static String ATTACH_SOAPUI_LOG = "Attach SoapUI NG log file";
-
     public final static String ATTACH_PROJECT = "Attach project file";
 
     public final static String ATTACH_LOADUI_LOG = "Attach LoadUI NG log file";

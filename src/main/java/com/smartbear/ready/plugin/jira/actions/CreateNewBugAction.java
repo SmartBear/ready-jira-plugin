@@ -59,7 +59,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             UISupport.showErrorMessage("Workspace item selected. Please choose another navigator tree item.");
             return;
         }
-        bugTrackerProvider.setActiveItem(target);//TODO: check if it's really target
+        bugTrackerProvider.setActiveItem(target);
         List<String> projects = bugTrackerProvider.getListOfAllProjects();
         if (projects == null || projects.size() == 0) {
             UISupport.showErrorMessage("No available Jira projects.");
@@ -130,8 +130,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             isAttachmentSuccess = true;
             URI newIssueAttachURI = bugTrackerProvider.getIssue(creationResult.getIssue().getKey()).getAttachmentsUri();
             resultError = new StringBuilder();
-            if (issueDetails.getBooleanValue(BugInfoDialogConsts.ATTACH_SOAPUI_LOG)) {
-                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerProvider.getActiveItemName() + ".log", bugTrackerProvider.getSoapUIExecutionLog());
+            if (issueDetails.getBooleanValue(BugInfoDialogConsts.ATTACH_READYAPI_LOG)) {
+                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerProvider.getActiveItemName() + ".log", bugTrackerProvider.getReadyApiLog());
                 if (!attachResult.getSuccess()) {
                     isAttachmentSuccess = false;
                     resultError.append(attachResult.getError());
@@ -277,7 +277,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, "Issue summary", XForm.FieldType.TEXT);
             form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, "Issue description", XForm.FieldType.TEXTAREA);
             addExtraRequiredFields(form, bugTrackerProvider, selectedProject, selectedIssueType);
-            form.addCheckBox(BugInfoDialogConsts.ATTACH_SOAPUI_LOG, "");
+            form.addCheckBox(BugInfoDialogConsts.ATTACH_READYAPI_LOG, "");
             form.addCheckBox(BugInfoDialogConsts.ATTACH_PROJECT, "");
             form.addTextField(BugInfoDialogConsts.ATTACH_ANY_FILE, "Attach file", XForm.FieldType.FILE);
             dialog = builder.buildDialog(builder.buildOkCancelActions(), "Please specify issue options", null);
