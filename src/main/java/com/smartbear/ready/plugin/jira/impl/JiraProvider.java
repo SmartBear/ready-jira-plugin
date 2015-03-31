@@ -25,8 +25,6 @@ import com.eviware.soapui.model.settings.Settings;
 import com.eviware.soapui.model.support.ModelSupport;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
-import com.eviware.soapui.support.log.JLogList;
-import com.eviware.x.form.XFormField;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerPrefs;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerSettings;
 import org.apache.log4j.Appender;
@@ -54,9 +52,11 @@ import java.util.concurrent.ExecutionException;
 public class JiraProvider implements SimpleBugTrackerProvider {
     private static final Logger logger = LoggerFactory.getLogger(JiraProvider.class);
 
-    private final static String BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED = "Issue key not specified";
-    private final static String BUG_TRACKER_FILE_NAME_NOT_SPECIFIED = "File name not specified";
+    private final static String BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED = "Issue key is not specified";
+    private final static String BUG_TRACKER_FILE_NAME_NOT_SPECIFIED = "File name is not specified";
     private final static String BUG_TRACKER_INCORRECT_FILE_PATH = "Incorrect file path";
+    private final static String BUG_TRACKER_URI_IS_INCORRECT = "Bug tracker URI is incorrect.";
+    public static final String BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED = "Bug tracker settings are not completely specified.";
 
     private ModelItem activeElement;
     private JiraRestClient restClient = null;
@@ -84,16 +84,16 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     private JiraProvider() {
         bugTrackerSettings = getBugTrackerSettings();
         if (!settingsComplete(bugTrackerSettings)) {
-            logger.error("Bug tracker settings are not completely specified.");
-            UISupport.showErrorMessage("Bug tracker settings are not completely specified.");
+            logger.error(BUG_TRACKER_URI_IS_INCORRECT);
+            UISupport.showErrorMessage(BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED);
             return;
         }
         final AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
         try {
             restClient = factory.createWithBasicHttpAuthentication(new URI(bugTrackerSettings.getUrl()), bugTrackerSettings.getLogin(), bugTrackerSettings.getPassword());
         } catch (URISyntaxException e) {
-            logger.error("Incorrectly specified bug tracker URI.");
-            UISupport.showErrorMessage("Incorrectly specified bug tracker URI.");
+            logger.error(BUG_TRACKER_URI_IS_INCORRECT);
+            UISupport.showErrorMessage(BUG_TRACKER_URI_IS_INCORRECT);
         }
     }
 
@@ -316,7 +316,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     public IssueCreationResult createIssue(String projectKey, String issueKey, String priority, String summary, String description, Map<String, String> extraRequiredValues) {
         //https://bitbucket.org/atlassian/jira-rest-java-client/src/75a64c9d81aad7d8bd9beb11e098148407b13cae/test/src/test/java/samples/Example1.java?at=master
         if (restClient == null) {
-            return new IssueCreationResult("Incorrectly specified bug tracker URI.");//TODO: correct message
+            return new IssueCreationResult(BUG_TRACKER_URI_IS_INCORRECT);
         }
 
         BasicIssue basicIssue = null;

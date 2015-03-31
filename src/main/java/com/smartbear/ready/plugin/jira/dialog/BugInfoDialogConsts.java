@@ -14,9 +14,9 @@ public interface BugInfoDialogConsts {
 
     public final static String ISSUE_PRIORITY = "Priority";
 
-    public final static String ISSUE_SUMMARY = "Bug summary";
+    public final static String ISSUE_SUMMARY = "Issue summary";
 
-    public final static String ISSUE_DESCRIPTION = "Bug description";
+    public final static String ISSUE_DESCRIPTION = "Issue description";
 
     public final static String ATTACH_PROJECT = "Attach project file";
 
