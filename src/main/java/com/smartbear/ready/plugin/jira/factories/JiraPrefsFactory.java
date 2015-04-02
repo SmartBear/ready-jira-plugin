@@ -88,6 +88,6 @@ public class JiraPrefsFactory implements Prefs {
 
     @Override
     public String getTitle() {
-        return "Jira";
+        return "JIRA";
     }
 }
