@@ -345,16 +345,19 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 selectedProject = (String) (allProjectsList.toArray()[0]);
             }
             projectsCombo.setValue(selectedProject);
+            Object [] currentProjectIssueTypes = bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray();
+            final XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE, currentProjectIssueTypes, BugInfoDialogConsts.ISSUE_TYPE);
             projectsCombo.addFormFieldListener(new XFormFieldListener() {
                 @Override
                 public void valueChanged(XFormField xFormField, String newValue, String oldValue) {
                     selectedProject = newValue;
+                    issueTypesCombo.setOptions(bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray());
                 }
             });
             if (StringUtils.isNullOrEmpty(selectedIssueType)) {
-                selectedIssueType = (String) bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray()[0];
+                selectedIssueType = (String) currentProjectIssueTypes[0];
             }
-            XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE, bugTrackerProvider.getListOfAllIssueTypes(selectedProject).toArray(), BugInfoDialogConsts.ISSUE_TYPE);
+            issueTypesCombo.setOptions(currentProjectIssueTypes);
             issueTypesCombo.setValue(selectedIssueType);
             issueTypesCombo.addFormFieldListener(new XFormFieldListener() {
                 @Override
