@@ -153,7 +153,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return new JiraApiCallResult<OptionalIterable<IssueType>>(project.getResult().getIssueTypes());
     }
 
-    public List<String> getListOfAllIssueTypes(String projectKey) {
+    public List<String> getListOfProjectIssueTypes(String projectKey) {
         JiraApiCallResult<OptionalIterable<IssueType>> result = getProjectIssueTypes(projectKey);
         if (!result.isSuccess()) {
             return new ArrayList<String>();
