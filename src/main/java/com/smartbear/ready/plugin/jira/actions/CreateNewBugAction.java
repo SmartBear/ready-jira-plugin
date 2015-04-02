@@ -81,6 +81,9 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             if (dialogTwo.show()) {
                 handleOkAction(bugTrackerProvider, dialogTwo);
             }
+        } else {
+            selectedProject = null;
+            selectedIssueType = null;
         }
     }
 
