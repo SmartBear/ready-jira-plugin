@@ -5,16 +5,17 @@ import com.atlassian.jira.rest.client.api.GetCreateIssueMetadataOptionsBuilder;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.MetadataRestClient;
 import com.atlassian.jira.rest.client.api.OptionalIterable;
-import com.atlassian.jira.rest.client.api.domain.BasicComponent;
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 import com.atlassian.jira.rest.client.api.domain.BasicProject;
 import com.atlassian.jira.rest.client.api.domain.CimFieldInfo;
 import com.atlassian.jira.rest.client.api.domain.CimIssueType;
 import com.atlassian.jira.rest.client.api.domain.CimProject;
+import com.atlassian.jira.rest.client.api.domain.CustomFieldOption;
 import com.atlassian.jira.rest.client.api.domain.Issue;
 import com.atlassian.jira.rest.client.api.domain.IssueType;
 import com.atlassian.jira.rest.client.api.domain.Priority;
 import com.atlassian.jira.rest.client.api.domain.Project;
+import com.atlassian.jira.rest.client.api.domain.input.ComplexIssueInputFieldValue;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
 import com.atlassian.util.concurrent.Promise;
@@ -68,7 +69,6 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     Map<String, Project> requestedProjects = new HashMap<>();
     Iterable<Priority> priorities = null;
     Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*FieldName*/, CimFieldInfo>>> projectFields = new HashMap<>();
-    Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*FieldName*/, CimFieldInfo>>> allRequiredFields = new HashMap<>();
 
     public static JiraProvider getProvider (){
         if (instance == null){
@@ -168,6 +168,14 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return issueTypeList;
     }
 
+    public CustomFieldOption transformToCustomFieldOption(Object object){
+        if (object instanceof CustomFieldOption){
+            return (CustomFieldOption)object;
+        }
+
+        return null;
+    }
+
     private JiraApiCallResult<Iterable<Priority>> getAllPriorities() {
         if (priorities == null) {
             final MetadataRestClient client = restClient.getMetadataClient();
@@ -195,20 +203,6 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return null;
     }
 
-    public List<String> getListOfPriorities() {
-        JiraApiCallResult<Iterable<Priority>> priorities = getAllPriorities();
-        if (!priorities.isSuccess()) {
-            return new ArrayList<String>();
-        }
-
-        List<String> prioritiesAll = new ArrayList<String>();
-        for (Priority currentPriority : priorities.getResult()) {
-            prioritiesAll.add(currentPriority.getName());
-        }
-
-        return prioritiesAll;
-    }
-
     private JiraApiCallResult<IssueType> getIssueType(String projectKey, String requiredIssueType) {
         JiraApiCallResult<OptionalIterable<IssueType>> issueTypes = getProjectIssueTypes(projectKey);
         if (!issueTypes.isSuccess()) {
@@ -220,26 +214,6 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             }
         }
         return null;
-    }
-
-    public Iterable<BasicComponent> getProjectComponents (String projectKey){
-        JiraApiCallResult<Project> projectResult = getProjectByKey(projectKey);
-        if (!projectResult.isSuccess()) {
-            return null;
-        }
-
-        return projectResult.getResult().getComponents();
-    }
-
-    public Object[] getProjectComponentNames (String projectKey){
-        Iterable<BasicComponent> basicComponents = getProjectComponents(projectKey);
-        ArrayList<String> objects = new ArrayList<>();
-        for (BasicComponent obj:basicComponents){
-            objects.add(obj.getName());
-        }
-        Object[] simpleArray = new String[objects.size()];
-        objects.toArray(simpleArray);
-        return simpleArray;
     }
 
     public Issue getIssue(String key) {
@@ -254,7 +228,16 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return null;
     }
 
-    private JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> getProjectFields (String ... projects){
+    public Map<String,Map<String, Map<String, CimFieldInfo>>> getProjectFields (String ... projects){
+        JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> projectFieldsResult = getProjectFieldsInternal(projects);
+        if (projectFieldsResult.isSuccess()){
+            return projectFieldsResult.getResult();
+        }
+
+        return null;
+    }
+
+    private JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> getProjectFieldsInternal (String ... projects){
         List<String> unCachedProjectsList = new ArrayList<>();
         for (String project:projects){
             if (!projectFields.containsKey(project)){
@@ -262,11 +245,11 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             }
         }
         if (unCachedProjectsList.size() > 0) {
-            String [] uncachedProjectsArray = new String[unCachedProjectsList.size()];
-            unCachedProjectsList.toArray(uncachedProjectsArray);
+            String [] unCachedProjectsArray = new String[unCachedProjectsList.size()];
+            unCachedProjectsList.toArray(unCachedProjectsArray);
             GetCreateIssueMetadataOptions options = new GetCreateIssueMetadataOptionsBuilder()
                     .withExpandedIssueTypesFields()
-                    .withProjectKeys(unCachedProjectsList.toArray(uncachedProjectsArray))
+                    .withProjectKeys(unCachedProjectsList.toArray(unCachedProjectsArray))
                     .build();
             try {
                 Iterable<CimProject> cimProjects = restClient.getIssueClient().getCreateIssueMetadata(options).get();
@@ -287,33 +270,15 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return new JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>>(projectFields);
     }
 
-    public Map<String,Map<String, Map<String, CimFieldInfo>>> getProjectRequiredFields(String ... projects){
-        JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> allProjectFieldsResult = getProjectFields(projects);
-        if (!allProjectFieldsResult.isSuccess()){
-            return null;
-        }
-
-        for (Map.Entry<String,Map<String, Map<String, CimFieldInfo>>> project:allProjectFieldsResult.getResult().entrySet()){
-            Map<String, Map<String, CimFieldInfo>> issueTypeFields = project.getValue();
-            Map<String, Map<String, CimFieldInfo>> issueTypeRequiredFields = new HashMap<String, Map<String, CimFieldInfo>>();
-            for (Map.Entry<String, Map<String, CimFieldInfo>> issueType:issueTypeFields.entrySet()){
-                Map<String, CimFieldInfo> fields = issueType.getValue();
-                Map<String, CimFieldInfo> requiredFields = new HashMap<>();
-                for (Map.Entry<String, CimFieldInfo> field:fields.entrySet()){
-                    if(field.getValue().isRequired()){
-                        requiredFields.put(field.getKey(), field.getValue());
-                    }
-                }
-                issueTypeRequiredFields.put(issueType.getKey(), requiredFields);
-            }
-            allRequiredFields.put(project.getKey(), issueTypeRequiredFields);
-        }
-
-        return allRequiredFields;
+    private boolean isCustomFieldOptionValue (String projectKey, String issueTypeKey, String fieldName){
+        Map<String,Map<String, Map<String, CimFieldInfo>>> projectFields = getProjectFields(projectKey);
+        CimFieldInfo fieldInfo = projectFields.get(projectKey).get(issueTypeKey).get(fieldName);
+        Iterable<Object> allowedValues = fieldInfo.getAllowedValues();
+        return allowedValues != null;
     }
 
     @Override
-    public IssueCreationResult createIssue(String projectKey, String issueKey, String priority, String summary, String description, Map<String, String> extraRequiredValues) {
+    public IssueCreationResult createIssue(String projectKey, String issueTypeKey, String summary, String description, Map<String, String> extraRequiredValues) {
         //https://bitbucket.org/atlassian/jira-rest-java-client/src/75a64c9d81aad7d8bd9beb11e098148407b13cae/test/src/test/java/samples/Example1.java?at=master
         if (restClient == null) {
             return new IssueCreationResult(BUG_TRACKER_URI_IS_INCORRECT);
@@ -321,7 +286,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
 
         BasicIssue basicIssue = null;
         try {
-            JiraApiCallResult<IssueType> issueType = getIssueType(projectKey, issueKey);
+            JiraApiCallResult<IssueType> issueType = getIssueType(projectKey, issueTypeKey);
             if (!issueType.isSuccess()) {
                 return new IssueCreationResult(issueType.getError().getMessage());
             }
@@ -331,9 +296,11 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             issueInputBuilder.setProjectKey(projectKey);
             issueInputBuilder.setSummary(summary);
             issueInputBuilder.setDescription(description);
-            issueInputBuilder.setPriority(getPriorityByName(priority));
             for (final Map.Entry<String, String> extraRequiredValue : extraRequiredValues.entrySet()) {
-                if (extraRequiredValue.getKey().equals("components")) {
+                if (extraRequiredValue.getKey().equals("priority")) {
+                    issueInputBuilder.setPriority(getPriorityByName(extraRequiredValue.getValue()));
+                    continue;
+                } else if (extraRequiredValue.getKey().equals("components")) {
                     issueInputBuilder.setComponentsNames(new Iterable<String>() {
                         @Override
                         public Iterator<String> iterator() {
@@ -358,10 +325,67 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                             };
                         }
                     });
+                    continue;
+                } else if (extraRequiredValue.getKey().equals("versions")){
+                    issueInputBuilder.setAffectedVersionsNames(new Iterable<String>() {
+                        @Override
+                        public Iterator<String> iterator() {
+                            return new Iterator<String>() {
+                                boolean hasValue = true;
+                                @Override
+                                public boolean hasNext() {
+                                    return hasValue;
+                                }
+
+                                @Override
+                                public String next() {
+                                    hasValue = false;
+                                    return extraRequiredValue.getValue();
+                                }
+
+                                @Override
+                                public void remove() {
+
+                                }
+                            };
+                        }
+                    });
+                } else if (extraRequiredValue.getKey().equals("fixVersions")){
+                    issueInputBuilder.setFixVersionsNames(new Iterable<String>() {
+                        @Override
+                        public Iterator<String> iterator() {
+                            return new Iterator<String>() {
+                                boolean hasValue = true;
+
+                                @Override
+                                public boolean hasNext() {
+                                    return hasValue;
+                                }
+
+                                @Override
+                                public String next() {
+                                    hasValue = false;
+                                    return extraRequiredValue.getValue();
+                                }
+
+                                @Override
+                                public void remove() {
+
+                                }
+                            };
+                        }
+                    });
+                } else if (extraRequiredValue.getKey().equals("assignee")){
+                    issueInputBuilder.setAssigneeName(extraRequiredValue.getValue());
+                } else if (isCustomFieldOptionValue(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
+                    Map<String, Object> customOptionValue = new HashMap<>();
+                    customOptionValue.put("value", extraRequiredValue.getValue());
+                    issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
                 } else {
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), extraRequiredValue.getValue());
                 }
             }
+
             Promise<BasicIssue> issue = restClient.getIssueClient().createIssue(issueInputBuilder.build());
             basicIssue = issue.get();
         } catch (InterruptedException e) {
