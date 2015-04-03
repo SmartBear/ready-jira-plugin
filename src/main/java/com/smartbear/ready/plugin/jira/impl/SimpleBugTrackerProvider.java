@@ -5,7 +5,7 @@ import java.net.URI;
 import java.util.Map;
 
 public interface SimpleBugTrackerProvider {
-    public IssueCreationResult createIssue(String projectKey, String issueKey, String priority, String summary, String description, Map<String, String> extraRequiredValues);
+    public IssueCreationResult createIssue(String projectKey, String issueKey, String summary, String description, Map<String, String> extraRequiredValues);
     public AttachmentAddingResult attachFile(URI attachmentUri, String fileName, InputStream inputStream);
     public AttachmentAddingResult attachFile(URI attachmentUri, String filePath);
 }
