@@ -203,20 +203,6 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return null;
     }
 
-    public List<String> getListOfPriorities() {
-        JiraApiCallResult<Iterable<Priority>> priorities = getAllPriorities();
-        if (!priorities.isSuccess()) {
-            return new ArrayList<String>();
-        }
-
-        List<String> prioritiesAll = new ArrayList<String>();
-        for (Priority currentPriority : priorities.getResult()) {
-            prioritiesAll.add(currentPriority.getName());
-        }
-
-        return prioritiesAll;
-    }
-
     private JiraApiCallResult<IssueType> getIssueType(String projectKey, String requiredIssueType) {
         JiraApiCallResult<OptionalIterable<IssueType>> issueTypes = getProjectIssueTypes(projectKey);
         if (!issueTypes.isSuccess()) {
