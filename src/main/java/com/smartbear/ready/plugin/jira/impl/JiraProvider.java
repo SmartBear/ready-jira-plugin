@@ -340,7 +340,58 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                         }
                     });
                     continue;
-                } if (isCustomFieldOptionValue(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
+                } else if (extraRequiredValue.getKey().equals("versions")){
+                    issueInputBuilder.setAffectedVersionsNames(new Iterable<String>() {
+                        @Override
+                        public Iterator<String> iterator() {
+                            return new Iterator<String>() {
+                                boolean hasValue = true;
+                                @Override
+                                public boolean hasNext() {
+                                    return hasValue;
+                                }
+
+                                @Override
+                                public String next() {
+                                    hasValue = false;
+                                    return extraRequiredValue.getValue();
+                                }
+
+                                @Override
+                                public void remove() {
+
+                                }
+                            };
+                        }
+                    });
+                } else if (extraRequiredValue.getKey().equals("fixVersions")){
+                    issueInputBuilder.setFixVersionsNames(new Iterable<String>() {
+                        @Override
+                        public Iterator<String> iterator() {
+                            return new Iterator<String>() {
+                                boolean hasValue = true;
+
+                                @Override
+                                public boolean hasNext() {
+                                    return hasValue;
+                                }
+
+                                @Override
+                                public String next() {
+                                    hasValue = false;
+                                    return extraRequiredValue.getValue();
+                                }
+
+                                @Override
+                                public void remove() {
+
+                                }
+                            };
+                        }
+                    });
+                } else if (extraRequiredValue.getKey().equals("assignee")){
+                    issueInputBuilder.setAssigneeName(extraRequiredValue.getValue());
+                } else if (isCustomFieldOptionValue(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
                     Map<String, Object> customOptionValue = new HashMap<>();
                     customOptionValue.put("value", extraRequiredValue.getValue());
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
@@ -348,6 +399,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), extraRequiredValue.getValue());
                 }
             }
+
             Promise<BasicIssue> issue = restClient.getIssueClient().createIssue(issueInputBuilder.build());
             basicIssue = issue.get();
         } catch (InterruptedException e) {
