@@ -5,7 +5,6 @@ import com.atlassian.jira.rest.client.api.GetCreateIssueMetadataOptionsBuilder;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.MetadataRestClient;
 import com.atlassian.jira.rest.client.api.OptionalIterable;
-import com.atlassian.jira.rest.client.api.domain.BasicComponent;
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 import com.atlassian.jira.rest.client.api.domain.BasicProject;
 import com.atlassian.jira.rest.client.api.domain.CimFieldInfo;
@@ -169,7 +168,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return issueTypeList;
     }
 
-    public CustomFieldOption isObjectCustomFieldOption (Object object){
+    public CustomFieldOption transformToCustomFieldOption(Object object){
         if (object instanceof CustomFieldOption){
             return (CustomFieldOption)object;
         }
@@ -231,26 +230,6 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return null;
     }
 
-    public Iterable<BasicComponent> getProjectComponents (String projectKey){
-        JiraApiCallResult<Project> projectResult = getProjectByKey(projectKey);
-        if (!projectResult.isSuccess()) {
-            return null;
-        }
-
-        return projectResult.getResult().getComponents();
-    }
-
-    public Object[] getProjectComponentNames (String projectKey){
-        Iterable<BasicComponent> basicComponents = getProjectComponents(projectKey);
-        ArrayList<String> objects = new ArrayList<>();
-        for (BasicComponent obj:basicComponents){
-            objects.add(obj.getName());
-        }
-        Object[] simpleArray = new String[objects.size()];
-        objects.toArray(simpleArray);
-        return simpleArray;
-    }
-
     public Issue getIssue(String key) {
         try {
             return restClient.getIssueClient().getIssue(key).get();
@@ -280,11 +259,11 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             }
         }
         if (unCachedProjectsList.size() > 0) {
-            String [] uncachedProjectsArray = new String[unCachedProjectsList.size()];
-            unCachedProjectsList.toArray(uncachedProjectsArray);
+            String [] unCachedProjectsArray = new String[unCachedProjectsList.size()];
+            unCachedProjectsList.toArray(unCachedProjectsArray);
             GetCreateIssueMetadataOptions options = new GetCreateIssueMetadataOptionsBuilder()
                     .withExpandedIssueTypesFields()
-                    .withProjectKeys(unCachedProjectsList.toArray(uncachedProjectsArray))
+                    .withProjectKeys(unCachedProjectsList.toArray(unCachedProjectsArray))
                     .build();
             try {
                 Iterable<CimProject> cimProjects = restClient.getIssueClient().getCreateIssueMetadata(options).get();
@@ -305,23 +284,11 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return new JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>>(projectFields);
     }
 
-    private Long getCustomFieldOptionId (String projectKey, String issueTypeKey, String fieldName, String fieldValue){
+    private boolean isCustomFieldOptionValue (String projectKey, String issueTypeKey, String fieldName){
         Map<String,Map<String, Map<String, CimFieldInfo>>> projectFields = getProjectFields(projectKey);
         CimFieldInfo fieldInfo = projectFields.get(projectKey).get(issueTypeKey).get(fieldName);
         Iterable<Object> allowedValues = fieldInfo.getAllowedValues();
-        if (allowedValues != null){
-            for (Object obj:allowedValues){
-                if (!(obj instanceof CustomFieldOption)){
-                    return null;
-                }
-                CustomFieldOption customFieldOption = (CustomFieldOption)obj;
-                if (customFieldOption.getValue().equals(fieldValue)){
-                    return customFieldOption.getId();
-                }
-            }
-        }
-
-        return null;
+        return allowedValues != null;
     }
 
     @Override
@@ -344,13 +311,9 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             issueInputBuilder.setSummary(summary);
             issueInputBuilder.setDescription(description);
             for (final Map.Entry<String, String> extraRequiredValue : extraRequiredValues.entrySet()) {
-                Long customFieldOptionId = getCustomFieldOptionId(projectKey, issueTypeKey, extraRequiredValue.getKey(), extraRequiredValue.getValue());
                 if (extraRequiredValue.getKey().equals("priority")) {
                     issueInputBuilder.setPriority(getPriorityByName(extraRequiredValue.getValue()));
-                } else if (customFieldOptionId != null) {
-                    Map<String, Object> customOptionValue = new HashMap<>();
-                    customOptionValue.put("value", extraRequiredValue.getValue());
-                    issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
+                    continue;
                 } else if (extraRequiredValue.getKey().equals("components")) {
                     issueInputBuilder.setComponentsNames(new Iterable<String>() {
                         @Override
@@ -376,6 +339,11 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                             };
                         }
                     });
+                    continue;
+                } if (isCustomFieldOptionValue(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
+                    Map<String, Object> customOptionValue = new HashMap<>();
+                    customOptionValue.put("value", extraRequiredValue.getValue());
+                    issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
                 } else {
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), extraRequiredValue.getValue());
                 }

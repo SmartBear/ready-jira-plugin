@@ -1,5 +1,8 @@
 package com.smartbear.ready.plugin.jira.actions;
 
+import com.atlassian.jira.rest.client.api.NamedEntity;
+import com.atlassian.jira.rest.client.api.domain.BasicComponent;
+import com.atlassian.jira.rest.client.api.domain.BasicPriority;
 import com.atlassian.jira.rest.client.api.domain.CimFieldInfo;
 import com.atlassian.jira.rest.client.api.domain.CustomFieldOption;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
@@ -234,26 +237,17 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    public static Object[] IterableObjectsToNameArray(JiraProvider bugTrackerProvider, Iterable<Object> input){
+    public static Object[] IterableObjectsToNameArray(JiraProvider bugTrackerProvider, Iterable<Object> input) {
         ArrayList<Object> objects = new ArrayList<>();
-        for (Object obj:input){
-            try {
-                CustomFieldOption customFieldOption = bugTrackerProvider.isObjectCustomFieldOption(obj);
-                if (customFieldOption != null){
-                    objects.add(customFieldOption.getValue());
-                } else {
-                    Method getName = obj.getClass().getMethod("getName");
-                    if (getName != null) {
-                        Object name = getName.invoke(obj);
-                        objects.add(name);
-                    }
+        for (Object obj : input) {
+            CustomFieldOption customFieldOption = bugTrackerProvider.transformToCustomFieldOption(obj);
+            if (customFieldOption != null) {
+                objects.add(customFieldOption.getValue());
+            } else {
+                if (obj instanceof NamedEntity) {
+                    NamedEntity namedEntity = (NamedEntity) obj;
+                    objects.add(namedEntity.getName());
                 }
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
             }
         }
         return objects.toArray();
@@ -267,24 +261,19 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 continue;
             }
             CimFieldInfo fieldInfo = field.getValue();
+            XFormField newField;
             if (fieldInfo.getAllowedValues() != null) {
                 Object[] values = IterableObjectsToNameArray(bugTrackerProvider, fieldInfo.getAllowedValues());
                 if (values.length > 0) {
-                    XFormOptionsField combo = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
-                    if (fieldInfo.isRequired()) {
-                        combo.setRequired(true, "required");
-                    }
+                    newField = baseDialog.addComboBox(fieldInfo.getName(), values, "");
                 } else {
-                    XFormTextField textField = baseDialog.addTextField(fieldInfo.getName(), field.getKey(), XForm.FieldType.TEXT);
-                    if (fieldInfo.isRequired()) {
-                        textField.setRequired(true, "required");
-                    }
+                    newField = baseDialog.addTextField(fieldInfo.getName(), "", XForm.FieldType.TEXT);
                 }
             } else {
-                XFormTextField textField = baseDialog.addTextField(fieldInfo.getName(), field.getKey(), XForm.FieldType.TEXT);
-                if (fieldInfo.isRequired()){
-                    textField.setRequired(true, "required");
-                }
+                newField = baseDialog.addTextField(fieldInfo.getName(), "", XForm.FieldType.TEXT);
+            }
+            if (fieldInfo.isRequired()){
+                newField.setRequired(true, "");
             }
         }
     }
@@ -309,9 +298,10 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         public Object construct(XProgressMonitor xProgressMonitor) {
             XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION);
             XForm form = builder.createForm("Basic");
-            String selectedPriority = (String) bugTrackerProvider.getListOfPriorities().toArray()[0];
-            form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY, XForm.FieldType.TEXT);
-            form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, ISSUE_DESCRIPTION, XForm.FieldType.TEXTAREA);
+            XFormField summaryField = form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY, XForm.FieldType.TEXT);
+            summaryField.setRequired(true, "");
+            XFormField descriptionField = form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, ISSUE_DESCRIPTION, XForm.FieldType.TEXTAREA);
+            descriptionField.setRequired(true, "");
             addExtraFields(form, bugTrackerProvider, selectedProject, selectedIssueType);
             form.addCheckBox(BugInfoDialogConsts.ATTACH_READYAPI_LOG, "");
             form.addCheckBox(BugInfoDialogConsts.ATTACH_PROJECT, "");
