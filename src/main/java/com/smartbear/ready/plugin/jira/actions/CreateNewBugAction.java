@@ -265,15 +265,15 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             if (fieldInfo.getAllowedValues() != null) {
                 Object[] values = IterableObjectsToNameArray(bugTrackerProvider, fieldInfo.getAllowedValues());
                 if (values.length > 0) {
-                    newField = baseDialog.addComboBox(fieldInfo.getName(), values, "");
+                    newField = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
                 } else {
-                    newField = baseDialog.addTextField(fieldInfo.getName(), "", XForm.FieldType.TEXT);
+                    newField = baseDialog.addTextField(fieldInfo.getName(), fieldInfo.getName(), XForm.FieldType.TEXT);
                 }
             } else {
-                newField = baseDialog.addTextField(fieldInfo.getName(), "", XForm.FieldType.TEXT);
+                newField = baseDialog.addTextField(fieldInfo.getName(), fieldInfo.getName(), XForm.FieldType.TEXT);
             }
             if (fieldInfo.isRequired()){
-                newField.setRequired(true, "");
+                newField.setRequired(true, fieldInfo.getName());
             }
         }
     }
@@ -299,12 +299,12 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION);
             XForm form = builder.createForm("Basic");
             XFormField summaryField = form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY, XForm.FieldType.TEXT);
-            summaryField.setRequired(true, "");
+            summaryField.setRequired(true, ISSUE_SUMMARY);
             XFormField descriptionField = form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, ISSUE_DESCRIPTION, XForm.FieldType.TEXTAREA);
-            descriptionField.setRequired(true, "");
+            descriptionField.setRequired(true, ISSUE_DESCRIPTION);
             addExtraFields(form, bugTrackerProvider, selectedProject, selectedIssueType);
-            form.addCheckBox(BugInfoDialogConsts.ATTACH_READYAPI_LOG, "");
-            form.addCheckBox(BugInfoDialogConsts.ATTACH_PROJECT, "");
+            form.addCheckBox(BugInfoDialogConsts.ATTACH_READYAPI_LOG, BugInfoDialogConsts.ATTACH_READYAPI_LOG);
+            form.addCheckBox(BugInfoDialogConsts.ATTACH_PROJECT, BugInfoDialogConsts.ATTACH_PROJECT);
             form.addTextField(BugInfoDialogConsts.ATTACH_ANY_FILE, ATTACH_FILE, XForm.FieldType.FILE);
             dialog = builder.buildDialog(builder.buildOkCancelActions(), PLEASE_SPECIFY_ISSUE_OPTIONS, null);
             return dialog;
