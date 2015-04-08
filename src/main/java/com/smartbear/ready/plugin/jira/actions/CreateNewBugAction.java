@@ -43,12 +43,12 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     public static final String SPECIFIES_THE_REQUIRED_FIELDS_TO_CREATE_NEW_ISSUE_IN_JIRA = "Populate the needed fields to create a new issue in JIRA";
     public static final String WORKSPACE_ITEM_SELECTED = "A workspace item has been selected. Please choose another navigator tree item";
     public static final String NO_AVAILABLE_JIRA_PROJECTS = "No JIRA projects are available";
-    public static final String CREATING_NEW_JIRA_ISSUE = "Creating a new JIRA issue";
+    public static final String NEW_ISSUE_DETAILS_FORM_NAME = "Creating a new JIRA issue";
     public static final String PLEASE_WAIT = "Please wait";
     public static final String ADDING_ATTACHMENTS = "Adding attachments";
     public static final String READING_JIRA_SETTINGS_FOR_SELECTED_PROJECT_AND_ISSUE_TYPE = "Reading JIRA settings for the selected project and issue type";
     public static final String READING_JIRA_SETTINGS = "Reading JIRA settings";
-    private static String NEW_ISSUE_DIALOG_CAPTION = "Create a new JIRA issue";
+    private static String NEW_ISSUE_DIALOG_CAPTION = "Create a new JIRA ";
 
     protected String selectedProject, selectedIssueType;
 
@@ -212,7 +212,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 extraValues.put(entry.getKey(), values.get(entry.getValue().getName()));
             }
         }
-        XProgressDialog issueCreationProgressDialog = UISupport.getDialogs().createProgressDialog(CREATING_NEW_JIRA_ISSUE, 100, PLEASE_WAIT, false);
+        XProgressDialog issueCreationProgressDialog = UISupport.getDialogs().createProgressDialog(NEW_ISSUE_DETAILS_FORM_NAME, 100, PLEASE_WAIT, false);
         JiraIssueCreatorWorker worker = new JiraIssueCreatorWorker(bugTrackerProvider, projectKey, issueType, summary, description, extraValues);
         try {
             issueCreationProgressDialog.run(worker);
@@ -297,7 +297,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
         @Override
         public Object construct(XProgressMonitor xProgressMonitor) {
-            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION);
+            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + selectedIssueType);
             XForm form = builder.createForm("Basic");
             XFormField summaryField = form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY, XForm.FieldType.TEXT);
             summaryField.setRequired(true, ISSUE_SUMMARY);
@@ -347,7 +347,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
         @Override
         public Object construct(XProgressMonitor xProgressMonitor) {
-            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION);
+            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + "issue");
             XForm form = builder.createForm("Basic");
             List<String> allProjectsList = bugTrackerProvider.getListOfAllProjects();
             XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT, allProjectsList.toArray(), BugInfoDialogConsts.TARGET_ISSUE_PROJECT);
