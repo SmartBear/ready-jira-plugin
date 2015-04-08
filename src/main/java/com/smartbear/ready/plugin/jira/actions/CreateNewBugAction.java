@@ -48,6 +48,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     public static final String ADDING_ATTACHMENTS = "Adding attachments";
     public static final String READING_JIRA_SETTINGS_FOR_SELECTED_PROJECT_AND_ISSUE_TYPE = "Reading JIRA settings for the selected project and issue type";
     public static final String READING_JIRA_SETTINGS = "Reading JIRA settings";
+    public static final String TOOLBAR_ACTION_DESCRIPTION = "Create JIRA issue";
     private static String NEW_ISSUE_DIALOG_CAPTION = "Create a new JIRA ";
 
     protected String selectedProject, selectedIssueType;
