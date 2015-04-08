@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
-    public static final String CREATE_JIRA_ISSUE = "Create JIRA Issue";
+    public static final String TOOLBAR_BUTTON_CAPTION = "JIRA";
     public static final String SPECIFIES_THE_REQUIRED_FIELDS_TO_CREATE_NEW_ISSUE_IN_JIRA = "Populate the needed fields to create a new issue in JIRA";
     public static final String WORKSPACE_ITEM_SELECTED = "A workspace item has been selected. Please choose another navigator tree item";
     public static final String NO_AVAILABLE_JIRA_PROJECTS = "No JIRA projects are available";
@@ -60,7 +60,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
     @Inject
     public CreateNewBugAction() {
-        super(CREATE_JIRA_ISSUE, SPECIFIES_THE_REQUIRED_FIELDS_TO_CREATE_NEW_ISSUE_IN_JIRA);
+        super(TOOLBAR_BUTTON_CAPTION, SPECIFIES_THE_REQUIRED_FIELDS_TO_CREATE_NEW_ISSUE_IN_JIRA);
     }
 
     @Override

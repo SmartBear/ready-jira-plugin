@@ -12,7 +12,7 @@ import com.smartbear.ready.security.actions.SecurityActionGroups;
 
 
 @ActionConfiguration(actionGroup = SecurityActionGroups.SECURITY_MODULE_TOOLBAR_ACTIONS, targetType = ModelItem.class, isToolbarAction = true,
-        iconPath = "com/smartbear/ready/plugin/jira/icons/Create-new-bug-tracker-issue-icon_20-20-px.png")
+        iconPath = "com/smartbear/ready/plugin/jira/icons/Bug-tracker-icon_20-20-px.png")
 @ClassRequiresLicense(validModules = LicensedModule.SoapUIPro)
 public class SecurityAction extends CreateNewBugAction{
 }
