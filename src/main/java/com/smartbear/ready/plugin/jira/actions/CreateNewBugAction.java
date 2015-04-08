@@ -1,8 +1,6 @@
 package com.smartbear.ready.plugin.jira.actions;
 
 import com.atlassian.jira.rest.client.api.NamedEntity;
-import com.atlassian.jira.rest.client.api.domain.BasicComponent;
-import com.atlassian.jira.rest.client.api.domain.BasicPriority;
 import com.atlassian.jira.rest.client.api.domain.CimFieldInfo;
 import com.atlassian.jira.rest.client.api.domain.CustomFieldOption;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
@@ -11,6 +9,7 @@ import com.eviware.soapui.model.testsuite.TestCase;
 import com.eviware.soapui.model.testsuite.TestStep;
 import com.eviware.soapui.model.testsuite.TestSuite;
 import com.eviware.soapui.model.workspace.Workspace;
+import com.eviware.soapui.ready.LicenseCheckUtils;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.action.support.AbstractSoapUIAction;
@@ -25,7 +24,6 @@ import com.eviware.x.form.XFormFactory;
 import com.eviware.x.form.XFormField;
 import com.eviware.x.form.XFormFieldListener;
 import com.eviware.x.form.XFormOptionsField;
-import com.eviware.x.form.XFormTextField;
 import com.google.inject.Inject;
 import com.smartbear.ready.plugin.jira.dialog.BugInfoDialogConsts;
 import com.smartbear.ready.plugin.jira.impl.AttachmentAddingResult;
@@ -33,8 +31,6 @@ import com.smartbear.ready.plugin.jira.impl.IssueCreationResult;
 import com.smartbear.ready.plugin.jira.impl.IssueInfoDialog;
 import com.smartbear.ready.plugin.jira.impl.JiraProvider;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +61,11 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
     @Override
     public void perform(ModelItem target, Object o) {
+        if (!LicenseCheckUtils.userHasAccessToSoapUING()) {
+            UISupport.showErrorMessage("No valid license available to use this feature!");
+            return;
+        }
+
         JiraProvider bugTrackerProvider = JiraProvider.getProvider();
         if (!bugTrackerProvider.settingsComplete()) {
             UISupport.showErrorMessage(JiraProvider.BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED);
