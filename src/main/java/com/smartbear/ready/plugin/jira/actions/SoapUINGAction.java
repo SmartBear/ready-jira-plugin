@@ -2,7 +2,6 @@ package com.smartbear.ready.plugin.jira.actions;
 
 import com.eviware.soapui.model.ModelItem;
 import com.eviware.soapui.plugins.ActionConfiguration;
-import com.eviware.soapui.plugins.ToolbarPosition;
 import com.smartbear.ready.functional.actions.FunctionalActionGroups;
 
 /**
