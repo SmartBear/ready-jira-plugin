@@ -41,16 +41,16 @@ import java.util.Map;
 public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     public static final String TOOLBAR_BUTTON_CAPTION = "JIRA";
     public static final String SPECIFIES_THE_REQUIRED_FIELDS_TO_CREATE_NEW_ISSUE_IN_JIRA = "Populate the needed fields to create a new issue in JIRA";
-    public static final String WORKSPACE_ITEM_SELECTED = "A workspace item has been selected. Please choose another navigator tree item";
-    public static final String NO_AVAILABLE_JIRA_PROJECTS = "No JIRA projects are available";
-    public static final String NEW_ISSUE_DETAILS_FORM_NAME = "Creating a new JIRA issue";
+    public static final String WORKSPACE_ITEM_SELECTED = "Unable to create a  JIRA item.\nThe workspace node is selected in the Navigator panel.\nSelect a project, test case or test suite in the Navigator.";
+    public static final String NO_AVAILABLE_JIRA_PROJECTS = "Unable to retrieve information from JIRA.\nPossible causes:\n  - The JIRA Integration plugin settings are invalid.\nPerhaps, you might specify email rather than username.\n  - You do not have enough permissions in JIRA.";
+    public static final String NEW_ISSUE_DETAILS_FORM_NAME = "Creating a new JIRA item";
     public static final String PLEASE_WAIT = "Please wait";
     public static final String ADDING_ATTACHMENTS = "Adding attachments";
     public static final String READING_JIRA_SETTINGS_FOR_SELECTED_PROJECT_AND_ISSUE_TYPE = "Reading JIRA settings for the selected project and item type";
-    public static final String READING_JIRA_SETTINGS = "Reading JIRA settings";
-    public static final String TOOLBAR_ACTION_DESCRIPTION = "Create JIRA issue";
+    public static final String READING_JIRA_SETTINGS = "Reading information from JIRA";
+    public static final String TOOLBAR_ACTION_DESCRIPTION = "Create a new JIRA item";
     public static final String PATH_TO_TOOLBAR_ICON = "com/smartbear/ready/plugin/jira/icons/Bug-tracker-icon_20-20-px.png";
-    private static String NEW_ISSUE_DIALOG_CAPTION = "Create a new JIRA ";
+    private static String NEW_ISSUE_DIALOG_CAPTION = "Create a new ";
 
     protected String selectedProject, selectedIssueType;
 
@@ -64,7 +64,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     @Override
     public void perform(ModelItem target, Object o) {
         if (!LicenseCheckUtils.userHasAccessToSoapUING()) {
-            UISupport.showErrorMessage("No valid license available to use this feature!");
+            UISupport.showErrorMessage("To use this feature, you need a SoapUI NG Pro license.\nYou can request a Pro trial at SmartBear.com.");
             return;
         }
 
@@ -285,7 +285,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         public static final String ISSUE_SUMMARY = "Summary";
         public static final String ISSUE_DESCRIPTION = "Description";
         public static final String ATTACH_FILE = "Attach a file";
-        public static final String PLEASE_SPECIFY_ISSUE_OPTIONS = "Please specify issue options";
+        public static final String PLEASE_SPECIFY_ISSUE_OPTIONS = "Specify item's field values. Required fields are marked with red.";
         final JiraProvider bugTrackerProvider;
         final String selectedProject;
         final String selectedIssueType;
@@ -299,7 +299,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
         @Override
         public Object construct(XProgressMonitor xProgressMonitor) {
-            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + selectedIssueType);
+            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + selectedIssueType + " item");
             XForm form = builder.createForm("Basic");
             XFormField summaryField = form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY, XForm.FieldType.TEXT);
             summaryField.setRequired(true, ISSUE_SUMMARY);
@@ -339,7 +339,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     }
 
     private class InitialDialogWorker implements Worker {
-        public static final String CHOOSE_REQUIRED_PROJECT_AND_ISSUE_TYPE = "Please choose a project and an item type";
+        public static final String CHOOSE_REQUIRED_PROJECT_AND_ISSUE_TYPE = "Select a project and an item type.";
         final JiraProvider bugTrackerProvider;
         XFormDialog dialog;
 
@@ -349,7 +349,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
         @Override
         public Object construct(XProgressMonitor xProgressMonitor) {
-            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + "issue");
+            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + " item");
             XForm form = builder.createForm("Basic");
             List<String> allProjectsList = bugTrackerProvider.getListOfAllProjects();
             XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT, allProjectsList.toArray(), BugInfoDialogConsts.TARGET_ISSUE_PROJECT);
