@@ -41,20 +41,21 @@ import java.util.Map;
 public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     public static final String TOOLBAR_BUTTON_CAPTION = "JIRA";
     public static final String SPECIFIES_THE_REQUIRED_FIELDS_TO_CREATE_NEW_ISSUE_IN_JIRA = "Populate the needed fields to create a new issue in JIRA";
-    public static final String WORKSPACE_ITEM_SELECTED = "A workspace item has been selected. Please choose another navigator tree item";
-    public static final String NO_AVAILABLE_JIRA_PROJECTS = "No JIRA projects are available";
-    public static final String NEW_ISSUE_DETAILS_FORM_NAME = "Creating a new JIRA issue";
+    public static final String WORKSPACE_ITEM_SELECTED = "Unable to create a  JIRA item.\nThe workspace node is selected in the Navigator panel.\nSelect a project, test case or test suite in the Navigator.";
+    public static final String NO_AVAILABLE_JIRA_PROJECTS = "Unable to retrieve information from JIRA.\nPossible causes:\n  - The JIRA Integration plugin settings are invalid.\nPerhaps, you might specify email rather than username.\n  - You do not have enough permissions in JIRA.";
+    public static final String NEW_ISSUE_DETAILS_FORM_NAME = "Creating a new JIRA item";
     public static final String PLEASE_WAIT = "Please wait";
     public static final String ADDING_ATTACHMENTS = "Adding attachments";
-    public static final String READING_JIRA_SETTINGS_FOR_SELECTED_PROJECT_AND_ISSUE_TYPE = "Reading JIRA settings for the selected project and issue type";
-    public static final String READING_JIRA_SETTINGS = "Reading JIRA settings";
-    public static final String TOOLBAR_ACTION_DESCRIPTION = "Create JIRA issue";
+    public static final String READING_JIRA_SETTINGS_FOR_SELECTED_PROJECT_AND_ISSUE_TYPE = "Reading JIRA settings for the selected project and item type";
+    public static final String READING_JIRA_SETTINGS = "Reading information from JIRA";
+    public static final String TOOLBAR_ACTION_DESCRIPTION = "Create a new JIRA item";
     public static final String PATH_TO_TOOLBAR_ICON = "com/smartbear/ready/plugin/jira/icons/Bug-tracker-icon_20-20-px.png";
-    private static String NEW_ISSUE_DIALOG_CAPTION = "Create a new JIRA ";
+    public static final String EMPTY_VALUE_FOR_OPTIONS_FIELD = "";
+    private static String NEW_ISSUE_DIALOG_CAPTION = "Create a new ";
 
     protected String selectedProject, selectedIssueType;
 
-    private static final List<String> skippedFieldKeys = Arrays.asList("summary", "project", "issuetype", "description", "attachment");
+    private static final List<String> skippedFieldKeys = Arrays.asList("summary", "project", "issuetype", "description", "attachment", "priority");
 
     @Inject
     public CreateNewBugAction() {
@@ -64,7 +65,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     @Override
     public void perform(ModelItem target, Object o) {
         if (!LicenseCheckUtils.userHasAccessToSoapUING()) {
-            UISupport.showErrorMessage("No valid license available to use this feature!");
+            UISupport.showErrorMessage("To use this feature, you need a SoapUI NG Pro license.\nYou can request a Pro trial at SmartBear.com.");
             return;
         }
 
@@ -256,6 +257,34 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         return objects.toArray();
     }
 
+    public static Object[] IterableObjectsToNameArrayAddEmptyValue(JiraProvider bugTrackerProvider, String fieldName, Iterable<Object> input) {
+        ArrayList<Object> objects = new ArrayList<>();
+        objects.add(EMPTY_VALUE_FOR_OPTIONS_FIELD);
+        for (Object obj : input) {
+            CustomFieldOption customFieldOption = bugTrackerProvider.transformToCustomFieldOption(obj);
+            if (customFieldOption != null) {
+                objects.add(customFieldOption.getValue());
+            } else {
+                if (obj instanceof NamedEntity) {
+                    NamedEntity namedEntity = (NamedEntity) obj;
+                    objects.add(namedEntity.getName());
+                }
+            }
+        }
+        return objects.toArray();
+    }
+
+    private CimFieldInfo getFieldInfo (JiraProvider bugTrackerProvider, String selectedProject, String selectedIssueType, String fieldInfoKey){
+        Map<String, Map<String, Map<String, CimFieldInfo>>> allFields = bugTrackerProvider.getProjectFields(selectedProject);
+        for (Map.Entry<String, CimFieldInfo> field : allFields.get(selectedProject).get(selectedIssueType).entrySet()) {
+            String key = field.getKey();
+            if (key.equals(fieldInfoKey)) {
+                return field.getValue();
+            }
+        }
+        return null;
+    }
+
     private void addExtraFields(XForm baseDialog, JiraProvider bugTrackerProvider, String selectedProject, String selectedIssueType) {
         Map<String, Map<String, Map<String, CimFieldInfo>>> allFields = bugTrackerProvider.getProjectFields(selectedProject);
         for (Map.Entry<String, CimFieldInfo> field : allFields.get(selectedProject).get(selectedIssueType).entrySet()) {
@@ -268,7 +297,12 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             if (fieldInfo.getAllowedValues() != null) {
                 Object[] values = IterableObjectsToNameArray(bugTrackerProvider, fieldInfo.getAllowedValues());
                 if (values.length > 0) {
-                    newField = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
+                    if (fieldInfo.isRequired()) {
+                        newField = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
+                    } else {
+                        newField = baseDialog.addComboBox(fieldInfo.getName(),
+                                IterableObjectsToNameArrayAddEmptyValue(bugTrackerProvider, fieldInfo.getName(), fieldInfo.getAllowedValues()), fieldInfo.getName());
+                    }
                 } else {
                     newField = baseDialog.addTextField(fieldInfo.getName(), fieldInfo.getName(), XForm.FieldType.TEXT);
                 }
@@ -282,10 +316,10 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     }
 
     private class RequiredFieldsWorker implements Worker{
-        public static final String ISSUE_SUMMARY = "Issue summary";
-        public static final String ISSUE_DESCRIPTION = "Issue description";
+        public static final String ISSUE_SUMMARY = "Summary";
+        public static final String ISSUE_DESCRIPTION = "Description";
         public static final String ATTACH_FILE = "Attach a file";
-        public static final String PLEASE_SPECIFY_ISSUE_OPTIONS = "Please specify issue options";
+        public static final String PLEASE_SPECIFY_ISSUE_OPTIONS = "Specify item's field values. Required fields are marked with red.";
         final JiraProvider bugTrackerProvider;
         final String selectedProject;
         final String selectedIssueType;
@@ -299,12 +333,21 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
         @Override
         public Object construct(XProgressMonitor xProgressMonitor) {
-            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + selectedIssueType);
+            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + selectedIssueType + " item");
             XForm form = builder.createForm("Basic");
             XFormField summaryField = form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY, XForm.FieldType.TEXT);
             summaryField.setRequired(true, ISSUE_SUMMARY);
-            XFormField descriptionField = form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, ISSUE_DESCRIPTION, XForm.FieldType.TEXTAREA);
-            descriptionField.setRequired(true, ISSUE_DESCRIPTION);
+            CimFieldInfo descriptionFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType, "description");
+            if (descriptionFieldInfo != null) {
+                XFormField descriptionField = form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, ISSUE_DESCRIPTION, XForm.FieldType.TEXTAREA);
+                descriptionField.setRequired(getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType, "description").isRequired(), ISSUE_DESCRIPTION);
+            }
+            CimFieldInfo priorityFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType, "priority");
+            if (priorityFieldInfo != null) {
+                XFormField priorityField = form.addComboBox(priorityFieldInfo.getName(), IterableObjectsToNameArray(bugTrackerProvider,
+                        priorityFieldInfo.getAllowedValues()), priorityFieldInfo.getName());
+                priorityField.setRequired(priorityFieldInfo.isRequired(), priorityFieldInfo.getName());
+            }
             addExtraFields(form, bugTrackerProvider, selectedProject, selectedIssueType);
             form.addCheckBox(BugInfoDialogConsts.ATTACH_READYAPI_LOG, BugInfoDialogConsts.ATTACH_READYAPI_LOG);
             form.addCheckBox(BugInfoDialogConsts.ATTACH_PROJECT, BugInfoDialogConsts.ATTACH_PROJECT);
@@ -339,7 +382,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     }
 
     private class InitialDialogWorker implements Worker {
-        public static final String CHOOSE_REQUIRED_PROJECT_AND_ISSUE_TYPE = "Please choose the required project and issue type";
+        public static final String CHOOSE_REQUIRED_PROJECT_AND_ISSUE_TYPE = "Select a project and an item type.";
         final JiraProvider bugTrackerProvider;
         XFormDialog dialog;
 
@@ -349,7 +392,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
         @Override
         public Object construct(XProgressMonitor xProgressMonitor) {
-            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + "issue");
+            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + " item");
             XForm form = builder.createForm("Basic");
             List<String> allProjectsList = bugTrackerProvider.getListOfAllProjects();
             XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT, allProjectsList.toArray(), BugInfoDialogConsts.TARGET_ISSUE_PROJECT);

@@ -15,12 +15,12 @@ import javax.swing.event.DocumentListener;
 
 @PluginPrefs
 public class JiraPrefsFactory implements Prefs {
-    public static final String BUG_TRACKER_LOGIN = "Login";
-    public static final String BUG_TRACKER_PASSWORD = "Password";
-    public static final String BUG_TRACKER_LOGIN_DESCRIPTION = "User name/login for the specified bug tracker";
-    public static final String BUG_TRACKER_PASSWORD_DESCRIPTION = "Password";
-    public static final String BUG_TRACKER_URL = "Bug tracker url";
-    public static final String BUG_TRACKER_URL_DESCRIPTION = "Bug tracker url";
+    public static final String BUG_TRACKER_LOGIN = "Username:";
+    public static final String BUG_TRACKER_PASSWORD = "Password:";
+    public static final String BUG_TRACKER_LOGIN_DESCRIPTION = "Your JIRA user account (not an email)";
+    public static final String BUG_TRACKER_PASSWORD_DESCRIPTION = "The password for logging in";
+    public static final String BUG_TRACKER_URL = "JIRA server URL:";
+    public static final String BUG_TRACKER_URL_DESCRIPTION = "The URL of your JIRA instance, for instance, https://mycompany.atlassian.net";
 
     private SimpleForm form;
 

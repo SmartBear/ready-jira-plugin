@@ -6,7 +6,7 @@
 
     <groupId>com.smartbear</groupId>
     <artifactId>rapi-jira-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <repositories>
         <repository>
