@@ -10,13 +10,13 @@ import com.eviware.x.form.support.AForm;
 public interface BugInfoDialogConsts {
     public final static String TARGET_ISSUE_PROJECT = "Project";
 
-    public final static String ISSUE_TYPE = "Issue type";
+    public final static String ISSUE_TYPE = "Item type";
 
     public final static String ISSUE_PRIORITY = "Priority";
 
-    public final static String ISSUE_SUMMARY = "Issue summary";
+    public final static String ISSUE_SUMMARY = "Summary";
 
-    public final static String ISSUE_DESCRIPTION = "Issue description";
+    public final static String ISSUE_DESCRIPTION = "Description";
 
     public final static String ATTACH_PROJECT = "Attach project file";
 
@@ -24,5 +24,5 @@ public interface BugInfoDialogConsts {
     public final static String ATTACH_SERVICEV_LOG = "Attach ServiceV log file";
     public final static String ATTACH_READYAPI_LOG = "Attach Ready! API log file";
 
-    public final static String ATTACH_ANY_FILE = "Attach any additional file";
+    public final static String ATTACH_ANY_FILE = "Attach additional files";
 }

@@ -46,7 +46,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     public static final String NEW_ISSUE_DETAILS_FORM_NAME = "Creating a new JIRA issue";
     public static final String PLEASE_WAIT = "Please wait";
     public static final String ADDING_ATTACHMENTS = "Adding attachments";
-    public static final String READING_JIRA_SETTINGS_FOR_SELECTED_PROJECT_AND_ISSUE_TYPE = "Reading JIRA settings for the selected project and issue type";
+    public static final String READING_JIRA_SETTINGS_FOR_SELECTED_PROJECT_AND_ISSUE_TYPE = "Reading JIRA settings for the selected project and item type";
     public static final String READING_JIRA_SETTINGS = "Reading JIRA settings";
     public static final String TOOLBAR_ACTION_DESCRIPTION = "Create JIRA issue";
     public static final String PATH_TO_TOOLBAR_ICON = "com/smartbear/ready/plugin/jira/icons/Bug-tracker-icon_20-20-px.png";
@@ -282,8 +282,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     }
 
     private class RequiredFieldsWorker implements Worker{
-        public static final String ISSUE_SUMMARY = "Issue summary";
-        public static final String ISSUE_DESCRIPTION = "Issue description";
+        public static final String ISSUE_SUMMARY = "Summary";
+        public static final String ISSUE_DESCRIPTION = "Description";
         public static final String ATTACH_FILE = "Attach a file";
         public static final String PLEASE_SPECIFY_ISSUE_OPTIONS = "Please specify issue options";
         final JiraProvider bugTrackerProvider;
@@ -339,7 +339,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     }
 
     private class InitialDialogWorker implements Worker {
-        public static final String CHOOSE_REQUIRED_PROJECT_AND_ISSUE_TYPE = "Please choose the required project and issue type";
+        public static final String CHOOSE_REQUIRED_PROJECT_AND_ISSUE_TYPE = "Please choose a project and an item type";
         final JiraProvider bugTrackerProvider;
         XFormDialog dialog;
 

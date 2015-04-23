@@ -12,7 +12,7 @@ import javax.swing.JPanel;
  */
 public class IssueInfoDialog {
 
-    public static final String CHECK_CREATED_ITEM = "You can check created item using link below.";
+    public static final String CHECK_CREATED_ITEM = "You can view it using this link:";
 
     public static void showDialog(String issueType, String link, String issueKey) {
         JOptionPane.showMessageDialog(null,
@@ -24,7 +24,7 @@ public class IssueInfoDialog {
     private static JPanel getPanel(String issueType, String link, String issueKey) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        JLabel label = new JLabel(String.format("%s was successfully created.", issueType));
+        JLabel label = new JLabel(String.format("A new '%s' item has been created successfully.", issueType));
         JLabel labelEx = new JLabel(CHECK_CREATED_ITEM);
         panel.add(label);
         panel.add(labelEx);
