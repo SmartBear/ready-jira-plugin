@@ -2,4 +2,4 @@ Use the JIRA Integration plugin to create JIRA items for failed tests directly f
 
 For information on the plugin, see the plugin's Wiki:
 
-https://github.com/SmartBear/rapi-jira-plugin/wiki
+https://github.com/SmartBear/ready-jira-plugin/wiki
