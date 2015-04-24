@@ -21,12 +21,14 @@ import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
 import com.atlassian.util.concurrent.Promise;
 import com.eviware.soapui.SoapUI;
+import com.eviware.soapui.actions.SoapUIPreferencesAction;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.model.ModelItem;
 import com.eviware.soapui.model.settings.Settings;
 import com.eviware.soapui.model.support.ModelSupport;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
+import com.smartbear.ready.plugin.jira.factories.JiraPrefsFactory;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerPrefs;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerSettings;
 import org.apache.log4j.Appender;
@@ -58,7 +60,9 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     private final static String BUG_TRACKER_FILE_NAME_NOT_SPECIFIED = "No file name is specified.";
     private final static String BUG_TRACKER_INCORRECT_FILE_PATH = "Incorrect file path.";
     private final static String BUG_TRACKER_URI_IS_INCORRECT = "The JIRA URL format is incorrect.";
-    public static final String BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED = "Unable to create a new JIRA item.\nThe JIRA Integration plugin's settings are not configured or invalid.";
+    public static final String BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED = "Unable to create a JIRA item.\nThe JIRA Integration plugin's settings are not configured or invalid.";
+    public static final String INCORRECT_PROTOCOL_IN_THE_JIRA_URL = "\nPerhaps,  you specified the HTTP protocol in the JIRA URL instead of HTTPS.";
+    public static final String INCORRECT_PROTOCOL_ERROR_CODE = "301";
 
     private ModelItem activeElement;
     private JiraRestClient restClient = null;
@@ -87,7 +91,10 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         if (!settingsComplete(bugTrackerSettings)) {
             logger.error(BUG_TRACKER_URI_IS_INCORRECT);
             UISupport.showErrorMessage(BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED);
-            return;
+            showSettingsDialog();
+            if (!settingsComplete(bugTrackerSettings)) {
+                return;
+            }
         }
         final AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
         try {
@@ -96,6 +103,11 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             logger.error(BUG_TRACKER_URI_IS_INCORRECT);
             UISupport.showErrorMessage(BUG_TRACKER_URI_IS_INCORRECT);
         }
+    }
+
+    private void showSettingsDialog() {
+        SoapUIPreferencesAction.getInstance().show(JiraPrefsFactory.JIRA_PREFS_TITLE);
+        createBugTrackerSettings();
     }
 
     private JiraApiCallResult<Iterable<BasicProject>> getAllProjects() {
@@ -397,9 +409,17 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             Promise<BasicIssue> issue = restClient.getIssueClient().createIssue(issueInputBuilder.build());
             basicIssue = issue.get();
         } catch (InterruptedException e) {
-            return new IssueCreationResult(e.getMessage());
+            String errorMessage = e.getMessage();
+            if (errorMessage.contains(INCORRECT_PROTOCOL_ERROR_CODE)){
+                errorMessage += INCORRECT_PROTOCOL_IN_THE_JIRA_URL;
+            }
+            return new IssueCreationResult(errorMessage);
         } catch (ExecutionException e) {
-            return new IssueCreationResult(e.getMessage());
+            String errorMessage = e.getMessage();
+            if (errorMessage.contains(INCORRECT_PROTOCOL_ERROR_CODE)){
+                errorMessage += INCORRECT_PROTOCOL_IN_THE_JIRA_URL;
+            }
+            return new IssueCreationResult(errorMessage);
         }
 
         return new IssueCreationResult(basicIssue);
@@ -521,11 +541,15 @@ public class JiraProvider implements SimpleBugTrackerProvider {
 
     public BugTrackerSettings getBugTrackerSettings() {
         if (bugTrackerSettings == null) {
-            Settings soapuiSettings = SoapUI.getSettings();
-            bugTrackerSettings = new BugTrackerSettings(soapuiSettings.getString(BugTrackerPrefs.DEFAULT_URL, ""),
-                    soapuiSettings.getString(BugTrackerPrefs.LOGIN, ""),
-                    soapuiSettings.getString(BugTrackerPrefs.PASSWORD, ""));
+            createBugTrackerSettings();
         }
         return bugTrackerSettings;
+    }
+
+    private void createBugTrackerSettings() {
+        Settings soapuiSettings = SoapUI.getSettings();
+        bugTrackerSettings = new BugTrackerSettings(soapuiSettings.getString(BugTrackerPrefs.DEFAULT_URL, ""),
+                soapuiSettings.getString(BugTrackerPrefs.LOGIN, ""),
+                soapuiSettings.getString(BugTrackerPrefs.PASSWORD, ""));
     }
 }

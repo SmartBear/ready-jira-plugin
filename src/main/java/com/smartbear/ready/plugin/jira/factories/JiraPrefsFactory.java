@@ -21,6 +21,7 @@ public class JiraPrefsFactory implements Prefs {
     public static final String BUG_TRACKER_PASSWORD_DESCRIPTION = "The password for logging in";
     public static final String BUG_TRACKER_URL = "JIRA server URL:";
     public static final String BUG_TRACKER_URL_DESCRIPTION = "The URL of your JIRA instance, for instance, https://mycompany.atlassian.net";
+    public static final String JIRA_PREFS_TITLE = "JIRA";
 
     private SimpleForm form;
 
@@ -88,6 +89,6 @@ public class JiraPrefsFactory implements Prefs {
 
     @Override
     public String getTitle() {
-        return "JIRA";
+        return JIRA_PREFS_TITLE;
     }
 }
