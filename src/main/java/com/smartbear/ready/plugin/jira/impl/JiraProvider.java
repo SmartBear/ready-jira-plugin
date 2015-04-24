@@ -60,7 +60,9 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     private final static String BUG_TRACKER_FILE_NAME_NOT_SPECIFIED = "No file name is specified.";
     private final static String BUG_TRACKER_INCORRECT_FILE_PATH = "Incorrect file path.";
     private final static String BUG_TRACKER_URI_IS_INCORRECT = "The JIRA URL format is incorrect.";
-    public static final String BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED = "The JIRA Integration plugin's settings are not configured or invalid.";
+    public static final String BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED = "Unable to create a JIRA item.\nThe JIRA Integration plugin's settings are not configured or invalid.";
+    public static final String INCORRECT_PROTOCOL_IN_THE_JIRA_URL = "\nPerhaps,  you specified the HTTP protocol in the JIRA URL instead of HTTPS.";
+    public static final String INCORRECT_PROTOCOL_ERROR_CODE = "301";
 
     private ModelItem activeElement;
     private JiraRestClient restClient = null;
@@ -407,9 +409,17 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             Promise<BasicIssue> issue = restClient.getIssueClient().createIssue(issueInputBuilder.build());
             basicIssue = issue.get();
         } catch (InterruptedException e) {
-            return new IssueCreationResult(e.getMessage());
+            String errorMessage = e.getMessage();
+            if (errorMessage.contains(INCORRECT_PROTOCOL_ERROR_CODE)){
+                errorMessage += INCORRECT_PROTOCOL_IN_THE_JIRA_URL;
+            }
+            return new IssueCreationResult(errorMessage);
         } catch (ExecutionException e) {
-            return new IssueCreationResult(e.getMessage());
+            String errorMessage = e.getMessage();
+            if (errorMessage.contains(INCORRECT_PROTOCOL_ERROR_CODE)){
+                errorMessage += INCORRECT_PROTOCOL_IN_THE_JIRA_URL;
+            }
+            return new IssueCreationResult(errorMessage);
         }
 
         return new IssueCreationResult(basicIssue);
