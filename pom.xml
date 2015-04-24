@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.smartbear</groupId>
-    <artifactId>rapi-jira-plugin</artifactId>
+    <artifactId>ready-jira-plugin</artifactId>
     <version>1.0</version>
 
     <repositories>
