@@ -1,5 +1,6 @@
 package com.smartbear.ready.plugin.jira;
 
+import com.eviware.soapui.SoapUI;
 import com.eviware.soapui.plugins.PluginAdapter;
 import com.eviware.soapui.plugins.PluginConfiguration;
 
@@ -8,4 +9,8 @@ import com.eviware.soapui.plugins.PluginConfiguration;
         autoDetect = true, description = "Creates JIRA items for failed tests directly from the Ready! API IDE.",
         infoUrl = "https://github.com/smartbear/ready-api-plugin-jira")
 public class PluginConfig extends PluginAdapter {
+    @Override
+    public boolean isActive() {
+        return !SoapUI.isCommandLine();
+    }
 }
