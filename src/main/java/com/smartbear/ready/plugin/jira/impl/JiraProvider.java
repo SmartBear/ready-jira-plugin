@@ -90,7 +90,9 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             logger.error(BUG_TRACKER_URI_IS_INCORRECT);
             UISupport.showErrorMessage(BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED);
             showSettingsDialog();
-            return;
+            if (!settingsComplete(bugTrackerSettings)) {
+                return;
+            }
         }
         final AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
         try {
