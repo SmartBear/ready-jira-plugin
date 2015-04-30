@@ -94,7 +94,7 @@
                 <exclude>*:*xmltooling*</exclude>
                 <exclude>*:*xmlunit*</exclude>
                 <exclude>*:*xom*</exclude>
-                <exclude>*:*rapi-jira-plugin*</exclude>
+                <exclude>*:*ready-jira-plugin*</exclude>
                 <exclude>*:*sac*</exclude>
                 <exclude>*:*axis*</exclude>
                 <exclude>*:*jackson-core*</exclude>
@@ -136,6 +136,7 @@
                 <exclude>*:*joda*</exclude>
                 <exclude>*:*jdtcore*</exclude>
                 <exclude>*:*loadui*</exclude>
+                <exclude>*:*h2*</exclude>
             </excludes>
         </dependencySet>
         <dependencySet>
