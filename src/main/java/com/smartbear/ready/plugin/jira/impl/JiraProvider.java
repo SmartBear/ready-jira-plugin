@@ -413,7 +413,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     customOptionValue.put("value", extraRequiredValue.getValue());
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
                 } else if (isArrayValue(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
-                    issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), Arrays.asList(extraRequiredValue.getValue()));
+                    issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), Arrays.asList(extraRequiredValue.getValue().split("\\s*,\\s*")));
                 } else {
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), extraRequiredValue.getValue());
                 }
