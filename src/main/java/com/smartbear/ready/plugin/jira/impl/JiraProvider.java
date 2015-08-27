@@ -46,6 +46,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -73,16 +74,16 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     Iterable<BasicProject> allProjects = null;
     Map<String, Project> requestedProjects = new HashMap<>();
     Iterable<Priority> priorities = null;
-    Map<String/*project*/,Map<String/*Issue Type*/, Map<String/*FieldName*/, CimFieldInfo>>> projectFields = new HashMap<>();
+    Map<String/*project*/, Map<String/*Issue Type*/, Map<String/*FieldName*/, CimFieldInfo>>> projectFields = new HashMap<>();
 
-    public static JiraProvider getProvider (){
-        if (instance == null){
+    public static JiraProvider getProvider() {
+        if (instance == null) {
             instance = new JiraProvider();
         }
         return instance;
     }
 
-    public static void freeProvider(){
+    public static void freeProvider() {
         instance = null;
     }
 
@@ -111,7 +112,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     }
 
     private JiraApiCallResult<Iterable<BasicProject>> getAllProjects() {
-        if (allProjects != null){
+        if (allProjects != null) {
             return new JiraApiCallResult<Iterable<BasicProject>>(allProjects);
         }
 
@@ -181,9 +182,9 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return issueTypeList;
     }
 
-    public CustomFieldOption transformToCustomFieldOption(Object object){
-        if (object instanceof CustomFieldOption){
-            return (CustomFieldOption)object;
+    public CustomFieldOption transformToCustomFieldOption(Object object) {
+        if (object instanceof CustomFieldOption) {
+            return (CustomFieldOption) object;
         }
 
         return null;
@@ -241,24 +242,24 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return null;
     }
 
-    public Map<String,Map<String, Map<String, CimFieldInfo>>> getProjectFields (String ... projects){
-        JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> projectFieldsResult = getProjectFieldsInternal(projects);
-        if (projectFieldsResult.isSuccess()){
+    public Map<String, Map<String, Map<String, CimFieldInfo>>> getProjectFields(String... projects) {
+        JiraApiCallResult<Map<String, Map<String, Map<String, CimFieldInfo>>>> projectFieldsResult = getProjectFieldsInternal(projects);
+        if (projectFieldsResult.isSuccess()) {
             return projectFieldsResult.getResult();
         }
 
         return null;
     }
 
-    private JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>> getProjectFieldsInternal (String ... projects){
+    private JiraApiCallResult<Map<String, Map<String, Map<String, CimFieldInfo>>>> getProjectFieldsInternal(String... projects) {
         List<String> unCachedProjectsList = new ArrayList<>();
-        for (String project:projects){
-            if (!projectFields.containsKey(project)){
+        for (String project : projects) {
+            if (!projectFields.containsKey(project)) {
                 unCachedProjectsList.add(project);
             }
         }
         if (unCachedProjectsList.size() > 0) {
-            String [] unCachedProjectsArray = new String[unCachedProjectsList.size()];
+            String[] unCachedProjectsArray = new String[unCachedProjectsList.size()];
             unCachedProjectsList.toArray(unCachedProjectsArray);
             GetCreateIssueMetadataOptions options = new GetCreateIssueMetadataOptionsBuilder()
                     .withExpandedIssueTypesFields()
@@ -272,22 +273,31 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     for (CimIssueType currentIssueType : issueTypes) {
                         issueTypeFields.put(currentIssueType.getName(), currentIssueType.getFields());
                     }
-                    projectFields.put(cimProject.getKey(),issueTypeFields);
+                    projectFields.put(cimProject.getKey(), issueTypeFields);
                 }
             } catch (InterruptedException e) {
-                return new JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>>(e);
+                return new JiraApiCallResult<Map<String, Map<String, Map<String, CimFieldInfo>>>>(e);
             } catch (ExecutionException e) {
-                return new JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>>(e);
+                return new JiraApiCallResult<Map<String, Map<String, Map<String, CimFieldInfo>>>>(e);
             }
         }
-        return new JiraApiCallResult<Map<String,Map<String, Map<String, CimFieldInfo>>>>(projectFields);
+        return new JiraApiCallResult<Map<String, Map<String, Map<String, CimFieldInfo>>>>(projectFields);
     }
 
-    private boolean isCustomFieldOptionValue (String projectKey, String issueTypeKey, String fieldName){
-        Map<String,Map<String, Map<String, CimFieldInfo>>> projectFields = getProjectFields(projectKey);
-        CimFieldInfo fieldInfo = projectFields.get(projectKey).get(issueTypeKey).get(fieldName);
+    private CimFieldInfo getFieldInfo(String projectKey, String issueTypeKey, String fieldName) {
+        Map<String, Map<String, Map<String, CimFieldInfo>>> projectFields = getProjectFields(projectKey);
+        return projectFields.get(projectKey).get(issueTypeKey).get(fieldName);
+    }
+
+    private boolean isFieldWithPredefinedValues(String projectKey, String issueTypeKey, String fieldName) {
+        CimFieldInfo fieldInfo = getFieldInfo(projectKey, issueTypeKey, fieldName);
         Iterable<Object> allowedValues = fieldInfo.getAllowedValues();
         return allowedValues != null;
+    }
+
+    private boolean isArrayValue(String projectKey, String issueTypeKey, String fieldName) {
+        CimFieldInfo fieldInfo = getFieldInfo(projectKey, issueTypeKey, fieldName);
+        return fieldInfo.getSchema().getType().equalsIgnoreCase("array");
     }
 
     @Override
@@ -337,12 +347,13 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                             };
                         }
                     });
-                } else if (extraRequiredValue.getKey().equals("versions")){
+                } else if (extraRequiredValue.getKey().equals("versions")) {
                     issueInputBuilder.setAffectedVersionsNames(new Iterable<String>() {
                         @Override
                         public Iterator<String> iterator() {
                             return new Iterator<String>() {
                                 boolean hasValue = true;
+
                                 @Override
                                 public boolean hasNext() {
                                     return hasValue;
@@ -361,7 +372,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                             };
                         }
                     });
-                } else if (extraRequiredValue.getKey().equals("fixVersions")){
+                } else if (extraRequiredValue.getKey().equals("fixVersions")) {
                     issueInputBuilder.setFixVersionsNames(new Iterable<String>() {
                         @Override
                         public Iterator<String> iterator() {
@@ -386,21 +397,23 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                             };
                         }
                     });
-                } else if (extraRequiredValue.getKey().equals("assignee")){
+                } else if (extraRequiredValue.getKey().equals("assignee")) {
                     issueInputBuilder.setAssigneeName(extraRequiredValue.getValue());
-                } else if (extraRequiredValue.getKey().equals("parent")){
+                } else if (extraRequiredValue.getKey().equals("parent")) {
                     Map<String, Object> parent = new HashMap<String, Object>();
                     parent.put("key", extraRequiredValue.getValue());
                     FieldInput parentField = new FieldInput("parent", new ComplexIssueInputFieldValue(parent));
                     issueInputBuilder.setFieldInput(parentField);
-                } else if (extraRequiredValue.getKey().equals("resolution")){
+                } else if (extraRequiredValue.getKey().equals("resolution")) {
                     Map<String, Object> customOptionValue = new HashMap<>();
                     customOptionValue.put("name", extraRequiredValue.getValue());
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
-                } else if (isCustomFieldOptionValue(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
+                } else if (isFieldWithPredefinedValues(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
                     Map<String, Object> customOptionValue = new HashMap<>();
                     customOptionValue.put("value", extraRequiredValue.getValue());
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
+                } else if (isArrayValue(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
+                    issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), Arrays.asList(extraRequiredValue.getValue()));
                 } else {
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), extraRequiredValue.getValue());
                 }
@@ -410,13 +423,13 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             basicIssue = issue.get();
         } catch (InterruptedException e) {
             String errorMessage = e.getMessage();
-            if (errorMessage.contains(INCORRECT_PROTOCOL_ERROR_CODE)){
+            if (errorMessage.contains(INCORRECT_PROTOCOL_ERROR_CODE)) {
                 errorMessage += INCORRECT_PROTOCOL_IN_THE_JIRA_URL;
             }
             return new IssueCreationResult(errorMessage);
         } catch (ExecutionException e) {
             String errorMessage = e.getMessage();
-            if (errorMessage.contains(INCORRECT_PROTOCOL_ERROR_CODE)){
+            if (errorMessage.contains(INCORRECT_PROTOCOL_ERROR_CODE)) {
                 errorMessage += INCORRECT_PROTOCOL_IN_THE_JIRA_URL;
             }
             return new IssueCreationResult(errorMessage);
@@ -455,15 +468,15 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     }
 
     @Override
-    public AttachmentAddingResult attachFile(URI attachmentUri, String filePath){
+    public AttachmentAddingResult attachFile(URI attachmentUri, String filePath) {
         if (attachmentUri == null) {
             return new AttachmentAddingResult(BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED);
         }
         if (StringUtils.isNullOrEmpty(filePath)) {
             return new AttachmentAddingResult(BUG_TRACKER_INCORRECT_FILE_PATH);
         }
-        File file = new File (filePath);
-        if (!file.exists() && file.isFile()){
+        File file = new File(filePath);
+        if (!file.exists() && file.isFile()) {
             return new AttachmentAddingResult(BUG_TRACKER_INCORRECT_FILE_PATH);
         }
 
@@ -475,14 +488,14 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         org.apache.log4j.Logger loggerr = org.apache.log4j.Logger.getLogger(loggerName);
         FileAppender fileAppender = null;
         Enumeration appenders = loggerr.getRootLogger().getAllAppenders();
-        while (appenders.hasMoreElements()){
-            Appender currentAppender = (Appender)appenders.nextElement();
-            if  (currentAppender instanceof FileAppender){
-                fileAppender = (FileAppender)currentAppender;
+        while (appenders.hasMoreElements()) {
+            Appender currentAppender = (Appender) appenders.nextElement();
+            if (currentAppender instanceof FileAppender) {
+                fileAppender = (FileAppender) currentAppender;
             }
         }
 
-        if(fileAppender != null){
+        if (fileAppender != null) {
             try {
                 return (InputStream) new FileInputStream(fileAppender.getFile());
             } catch (FileNotFoundException e) {
