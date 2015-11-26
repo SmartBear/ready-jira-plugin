@@ -55,7 +55,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
     protected String selectedProject, selectedIssueType;
 
-    private static final List<String> skippedFieldKeys = Arrays.asList("summary", "project", "issuetype", "description", "attachment", "priority");
+    private static final List<String> skippedFieldKeys = Arrays.asList("summary", "project", "issuetype", "description", "versions", "attachment", "priority");
 
     @Inject
     public CreateNewBugAction() {
@@ -337,18 +337,44 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             XForm form = builder.createForm("Basic");
             XFormField summaryField = form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY, XForm.FieldType.TEXT);
             summaryField.setRequired(true, ISSUE_SUMMARY);
-            CimFieldInfo descriptionFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType, "description");
+            CimFieldInfo descriptionFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType,
+                    "description");
             if (descriptionFieldInfo != null) {
-                XFormField descriptionField = form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, ISSUE_DESCRIPTION, XForm.FieldType.TEXTAREA);
-                descriptionField.setRequired(getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType, "description").isRequired(), ISSUE_DESCRIPTION);
+                XFormField descriptionField = form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, ISSUE_DESCRIPTION,
+                        XForm.FieldType.TEXTAREA);
+                descriptionField.setRequired(getFieldInfo(bugTrackerProvider, selectedProject,
+                        selectedIssueType, "description").isRequired(), ISSUE_DESCRIPTION);
             }
-            CimFieldInfo priorityFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType, "priority");
+            CimFieldInfo priorityFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType,
+                    "priority");
             if (priorityFieldInfo != null) {
-                XFormField priorityField = form.addComboBox(priorityFieldInfo.getName(), IterableObjectsToNameArray(bugTrackerProvider,
-                        priorityFieldInfo.getAllowedValues()), priorityFieldInfo.getName());
+                XFormField priorityField = form.addComboBox(priorityFieldInfo.getName(),
+                        IterableObjectsToNameArray(bugTrackerProvider, priorityFieldInfo.getAllowedValues()),
+                        priorityFieldInfo.getName());
                 priorityField.setRequired(priorityFieldInfo.isRequired(), priorityFieldInfo.getName());
             }
+            CimFieldInfo affectedVersionFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType,
+                    "versions");
+            if (affectedVersionFieldInfo != null) {
+                XFormField affectedVersionField = null;
+                if (affectedVersionFieldInfo.getAllowedValues() != null) {
+                    Object[] values = IterableObjectsToNameArray(bugTrackerProvider, affectedVersionFieldInfo.getAllowedValues());
+                    if (values.length > 0) {
+                        if (affectedVersionFieldInfo.isRequired()) {
+                            affectedVersionField = form.addComboBox(affectedVersionFieldInfo.getName(), values, affectedVersionFieldInfo.getName());
+                        } else {
+                            affectedVersionField = form.addComboBox(affectedVersionFieldInfo.getName(),
+                                    IterableObjectsToNameArrayAddEmptyValue(bugTrackerProvider, affectedVersionFieldInfo.getName(), affectedVersionFieldInfo.getAllowedValues()), affectedVersionFieldInfo.getName());
+                        }
+                    }
+                }
+                if (affectedVersionFieldInfo.isRequired() && affectedVersionField != null) {
+                    affectedVersionField.setRequired(true, affectedVersionFieldInfo.getName());
+                }
+            }
+
             addExtraFields(form, bugTrackerProvider, selectedProject, selectedIssueType);
+
             form.addCheckBox(BugInfoDialogConsts.ATTACH_READYAPI_LOG, BugInfoDialogConsts.ATTACH_READYAPI_LOG);
             form.addCheckBox(BugInfoDialogConsts.ATTACH_PROJECT, BugInfoDialogConsts.ATTACH_PROJECT);
             form.addTextField(BugInfoDialogConsts.ATTACH_ANY_FILE, ATTACH_FILE, XForm.FieldType.FILE);
@@ -395,13 +421,15 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + " item");
             XForm form = builder.createForm("Basic");
             List<String> allProjectsList = bugTrackerProvider.getListOfAllProjects();
-            XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT, allProjectsList.toArray(), BugInfoDialogConsts.TARGET_ISSUE_PROJECT);
+            XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT,
+                    allProjectsList.toArray(), BugInfoDialogConsts.TARGET_ISSUE_PROJECT);
             if (StringUtils.isNullOrEmpty(selectedProject)) {
                 selectedProject = (String) (allProjectsList.toArray()[0]);
             }
             projectsCombo.setValue(selectedProject);
             Object [] currentProjectIssueTypes = bugTrackerProvider.getListOfProjectIssueTypes(selectedProject).toArray();
-            final XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE, currentProjectIssueTypes, BugInfoDialogConsts.ISSUE_TYPE);
+            final XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE,
+                    currentProjectIssueTypes, BugInfoDialogConsts.ISSUE_TYPE);
             projectsCombo.addFormFieldListener(new XFormFieldListener() {
                 @Override
                 public void valueChanged(XFormField xFormField, String newValue, String oldValue) {
