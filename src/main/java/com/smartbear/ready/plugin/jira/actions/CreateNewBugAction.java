@@ -56,6 +56,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     protected String selectedProject, selectedIssueType;
 
     private static final List<String> skippedFieldKeys = Arrays.asList("summary", "project", "issuetype", "description", "versions", "attachment", "priority");
+    private static final List<String> multilineTextEditors = Arrays.asList("com.atlassian.jira.plugin.system.customfieldtypes:textarea");
 
     @Inject
     public CreateNewBugAction() {
@@ -301,13 +302,16 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                         newField = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
                     } else {
                         newField = baseDialog.addComboBox(fieldInfo.getName(),
-                                IterableObjectsToNameArrayAddEmptyValue(bugTrackerProvider, fieldInfo.getName(), fieldInfo.getAllowedValues()), fieldInfo.getName());
+                                IterableObjectsToNameArrayAddEmptyValue(bugTrackerProvider, fieldInfo.getName(),
+                                        fieldInfo.getAllowedValues()), fieldInfo.getName());
                     }
                 } else {
                     newField = baseDialog.addTextField(fieldInfo.getName(), fieldInfo.getName(), XForm.FieldType.TEXT);
                 }
             } else {
-                newField = baseDialog.addTextField(fieldInfo.getName(), fieldInfo.getName(), XForm.FieldType.TEXT);
+                boolean isMultilineTextEditor = multilineTextEditors.contains(fieldInfo.getSchema().getCustom());
+                newField = baseDialog.addTextField(fieldInfo.getName(), fieldInfo.getName(),
+                        isMultilineTextEditor ? XForm.FieldType.TEXTAREA : XForm.FieldType.TEXT);
             }
             if (fieldInfo.isRequired()){
                 newField.setRequired(true, fieldInfo.getName());
@@ -358,13 +362,17 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             if (affectedVersionFieldInfo != null) {
                 XFormField affectedVersionField = null;
                 if (affectedVersionFieldInfo.getAllowedValues() != null) {
-                    Object[] values = IterableObjectsToNameArray(bugTrackerProvider, affectedVersionFieldInfo.getAllowedValues());
+                    Object[] values = IterableObjectsToNameArray(bugTrackerProvider,
+                            affectedVersionFieldInfo.getAllowedValues());
                     if (values.length > 0) {
                         if (affectedVersionFieldInfo.isRequired()) {
-                            affectedVersionField = form.addComboBox(affectedVersionFieldInfo.getName(), values, affectedVersionFieldInfo.getName());
+                            affectedVersionField = form.addComboBox(affectedVersionFieldInfo.getName(), values,
+                                    affectedVersionFieldInfo.getName());
                         } else {
                             affectedVersionField = form.addComboBox(affectedVersionFieldInfo.getName(),
-                                    IterableObjectsToNameArrayAddEmptyValue(bugTrackerProvider, affectedVersionFieldInfo.getName(), affectedVersionFieldInfo.getAllowedValues()), affectedVersionFieldInfo.getName());
+                                    IterableObjectsToNameArrayAddEmptyValue(bugTrackerProvider,
+                                            affectedVersionFieldInfo.getName(), affectedVersionFieldInfo.getAllowedValues()),
+                                    affectedVersionFieldInfo.getName());
                         }
                     }
                 }
