@@ -30,6 +30,8 @@ import com.smartbear.ready.plugin.jira.impl.AttachmentAddingResult;
 import com.smartbear.ready.plugin.jira.impl.IssueCreationResult;
 import com.smartbear.ready.plugin.jira.impl.IssueInfoDialog;
 import com.smartbear.ready.plugin.jira.impl.JiraProvider;
+import com.smartbear.ready.plugin.jira.impl.SwingXScrollableFormDialogBuilder;
+import com.smartbear.ready.plugin.jira.impl.SwingXScrollableFormImpl;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -337,7 +339,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
         @Override
         public Object construct(XProgressMonitor xProgressMonitor) {
-            XFormDialogBuilder builder = XFormFactory.createDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + selectedIssueType + " item");
+            SwingXScrollableFormDialogBuilder builder = new SwingXScrollableFormDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + selectedIssueType + " item");
             XForm form = builder.createForm("Basic");
             XFormField summaryField = form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY, XForm.FieldType.TEXT);
             summaryField.setRequired(true, ISSUE_SUMMARY);
