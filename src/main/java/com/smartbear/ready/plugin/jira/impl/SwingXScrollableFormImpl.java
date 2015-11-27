@@ -26,6 +26,7 @@ import com.jgoodies.forms.layout.Sizes;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.border.Border;
@@ -38,7 +39,8 @@ import java.util.List;
 import java.util.Map;
 
 public class SwingXScrollableFormImpl implements XForm {
-    private JScrollPane panel;
+    private JScrollPane scrollPane;
+    private JPanel panel;
     private CellConstraints cc = new CellConstraints();
     private FormLayout layout;
     private RowSpec rowSpec;
@@ -54,14 +56,16 @@ public class SwingXScrollableFormImpl implements XForm {
     public SwingXScrollableFormImpl(String name, int leftIndent) {
         this.name = name;
         layout = new FormLayout(leftIndent + "px,left:pref,5px,left:default,5px:grow(1.0)");
-        panel = new JScrollPane();
+        panel = new JPanel(layout);
+        scrollPane = new JScrollPane(panel);
         rowSpec = new RowSpec(rowAlignment + ":pref");
     }
 
     public SwingXScrollableFormImpl(String name, FormLayout layout) {
         this.name = name;
         this.layout = layout;
-        panel = new JScrollPane();
+        panel = new JPanel(layout);
+        scrollPane = new JScrollPane(panel);
         rowSpec = new RowSpec(rowAlignment + ":pref");
     }
 
@@ -82,8 +86,8 @@ public class SwingXScrollableFormImpl implements XForm {
         this.name = name;
     }
 
-    public JScrollPane getPanel() {
-        return panel;
+    public JScrollPane getScrollPane() {
+        return scrollPane;
     }
 
     public void addSpace(int size) {
@@ -195,9 +199,9 @@ public class SwingXScrollableFormImpl implements XForm {
         int row = layout.getRowCount();
 
         if (StringUtils.isNullOrEmpty(label)) {
-            panel.add(new JSeparator(), cc.xywh(2, row, 3, 1));
+            scrollPane.add(new JSeparator(), cc.xywh(2, row, 3, 1));
         } else {
-            panel.add(new JLabel(label), cc.xywh(2, row, 3, 1));
+            scrollPane.add(new JLabel(label), cc.xywh(2, row, 3, 1));
         }
 
         addSpace(rowSpacing);
@@ -251,7 +255,7 @@ public class SwingXScrollableFormImpl implements XForm {
     }
 
     public void setBorder(Border border) {
-        panel.setBorder(border);
+        scrollPane.setBorder(border);
     }
 
     public XFormField addComponent(XFormField component) {
@@ -263,7 +267,7 @@ public class SwingXScrollableFormImpl implements XForm {
         int row = layout.getRowCount();
 
         AbstractSwingXFormField<?> swingFormComponent = (AbstractSwingXFormField<?>) component;
-        panel.add(swingFormComponent.getComponent(), cc.xyw(1, row, 4));
+        scrollPane.add(swingFormComponent.getComponent(), cc.xyw(1, row, 4));
 
         return component;
     }

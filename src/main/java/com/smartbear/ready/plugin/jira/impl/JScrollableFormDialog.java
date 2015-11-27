@@ -28,7 +28,6 @@ import com.eviware.x.form.XFormDialog;
 import com.eviware.x.form.XFormField;
 import com.eviware.x.impl.swing.AbstractSwingXFormField;
 import com.eviware.x.impl.swing.SwingXFormDialog;
-import com.eviware.x.impl.swing.SwingXFormImpl;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -57,7 +56,7 @@ public class JScrollableFormDialog extends SwingXFormDialog {
         buttons.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
         JPanel panel = new JPanel(new BorderLayout());
         this.form = (SwingXScrollableFormImpl) form;
-        panel.add((this.form.getPanel()), BorderLayout.CENTER);
+        panel.add((this.form.getScrollPane()), BorderLayout.CENTER);
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         if (description != null || icon != null) {
