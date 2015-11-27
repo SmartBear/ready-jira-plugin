@@ -29,8 +29,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.Border;
 import javax.swing.filechooser.FileFilter;
+import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -58,6 +61,7 @@ public class SwingXScrollableFormImpl implements XForm {
         layout = new FormLayout(leftIndent + "px,left:pref,5px,left:default,5px:grow(1.0)");
         panel = new JPanel(layout);
         scrollPane = new JScrollPane(panel);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         rowSpec = new RowSpec(rowAlignment + ":pref");
     }
 

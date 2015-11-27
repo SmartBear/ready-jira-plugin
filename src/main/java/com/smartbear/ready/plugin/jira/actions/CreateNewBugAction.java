@@ -90,7 +90,9 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         XFormDialog dialogOne = createInitialSetupDialog(bugTrackerProvider);
         if (dialogOne.show()) {
             XFormDialog dialogTwo = createIssueDetailsDialog(bugTrackerProvider, selectedProject, selectedIssueType);
+            dialogTwo.setSize(500, 500);
             if (dialogTwo.show()) {
+
                 handleOkAction(bugTrackerProvider, dialogTwo);
             }
         } else {
