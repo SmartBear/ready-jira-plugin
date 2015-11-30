@@ -40,7 +40,7 @@ import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.util.concurrent.CountDownLatch;
 
-public class JScrollableFormDialog extends SwingXFormDialog {
+public class JScrollableFormDialog extends SwingXFormDialog implements XFormDialogEx{
     private JDialog dialog;
     private SwingXScrollableFormImpl form;
     private JButtonBar buttons;
@@ -209,5 +209,20 @@ public class JScrollableFormDialog extends SwingXFormDialog {
 
     public void release() {
         dialog.dispose();
+    }
+
+    @Override
+    public int getWidth() {
+        return dialog.getWidth();
+    }
+
+    @Override
+    public int getHeight() {
+        return dialog.getHeight();
+    }
+
+    @Override
+    public void setHeight(int height) {
+        dialog.setPreferredSize(new Dimension((int) dialog.getPreferredSize().getWidth(), height));
     }
 }

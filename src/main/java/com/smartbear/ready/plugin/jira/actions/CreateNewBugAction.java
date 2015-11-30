@@ -32,7 +32,9 @@ import com.smartbear.ready.plugin.jira.impl.IssueInfoDialog;
 import com.smartbear.ready.plugin.jira.impl.JiraProvider;
 import com.smartbear.ready.plugin.jira.impl.SwingXScrollableFormDialogBuilder;
 import com.smartbear.ready.plugin.jira.impl.SwingXScrollableFormImpl;
+import com.smartbear.ready.plugin.jira.impl.XFormDialogEx;
 
+import java.awt.GraphicsEnvironment;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,9 +92,13 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         XFormDialog dialogOne = createInitialSetupDialog(bugTrackerProvider);
         if (dialogOne.show()) {
             XFormDialog dialogTwo = createIssueDetailsDialog(bugTrackerProvider, selectedProject, selectedIssueType);
-            dialogTwo.setSize(500, 500);
-            if (dialogTwo.show()) {
+            XFormDialogEx dialogTwoEx = (XFormDialogEx)dialogTwo;
+            if (dialogTwoEx != null) {
+                int screenHeight = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight();
+                dialogTwoEx.setHeight(7 * screenHeight / 10);
+            }
 
+            if (dialogTwo.show()) {
                 handleOkAction(bugTrackerProvider, dialogTwo);
             }
         } else {
