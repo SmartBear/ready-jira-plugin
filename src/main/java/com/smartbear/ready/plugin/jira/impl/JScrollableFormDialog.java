@@ -47,17 +47,18 @@ public class JScrollableFormDialog extends SwingXFormDialog implements XFormDial
     private boolean resized;
     private ActionList actions;
     private JPanel panel;
+    private final static int borderSize = 5;
 
     public JScrollableFormDialog(String name, SwingXScrollableFormImpl form, ActionList actions, String description, ImageIcon icon) {
         dialog = new JDialog(UISupport.getMainFrame(), name, true);
         dialog.setName(name);
         this.actions = actions;
         buttons = UISupport.initDialogActions(actions, dialog);
-        buttons.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+        buttons.setBorder(BorderFactory.createEmptyBorder(borderSize, 0, 0, 0));
         JPanel panel = new JPanel(new BorderLayout());
         this.form = (SwingXScrollableFormImpl) form;
         panel.add((this.form.getScrollPane()), BorderLayout.CENTER);
-        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        panel.setBorder(BorderFactory.createEmptyBorder(borderSize, borderSize, borderSize, borderSize));
 
         if (description != null || icon != null) {
             dialog.getContentPane().add(UISupport.buildDescription(name, description, icon), BorderLayout.NORTH);
@@ -68,8 +69,8 @@ public class JScrollableFormDialog extends SwingXFormDialog implements XFormDial
         buttons
                 .setBorder(BorderFactory.createCompoundBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(1, 0, 0, 0, Color.GRAY),
-                        BorderFactory.createMatteBorder(1, 0, 0, 0, Color.WHITE)), BorderFactory.createEmptyBorder(3, 5,
-                        3, 5)));
+                        BorderFactory.createMatteBorder(1, 0, 0, 0, Color.WHITE)), BorderFactory.createEmptyBorder(3, borderSize,
+                        3, borderSize)));
 
         dialog.getContentPane().add(buttons, BorderLayout.SOUTH);
         this.panel = panel;
@@ -223,6 +224,7 @@ public class JScrollableFormDialog extends SwingXFormDialog implements XFormDial
 
     @Override
     public void setHeight(int height) {
-        dialog.setPreferredSize(new Dimension((int) dialog.getPreferredSize().getWidth(), height));
+        dialog.setPreferredSize(new Dimension((int) dialog.getPreferredSize().getWidth() +
+                2 * borderSize + (int)form.getScrollPane().getVerticalScrollBar().getPreferredSize().getWidth(), height));
     }
 }
