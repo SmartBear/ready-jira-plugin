@@ -33,7 +33,9 @@ import com.smartbear.ready.plugin.jira.impl.JiraProvider;
 import com.smartbear.ready.plugin.jira.impl.SwingXScrollableFormDialogBuilder;
 import com.smartbear.ready.plugin.jira.impl.SwingXScrollableFormImpl;
 import com.smartbear.ready.plugin.jira.impl.XFormDialogEx;
+import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
+import javax.swing.JComboBox;
 import java.awt.GraphicsEnvironment;
 import java.net.URI;
 import java.util.ArrayList;
@@ -310,10 +312,12 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 if (values.length > 0) {
                     if (fieldInfo.isRequired()) {
                         newField = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
+                        makeComboBoxFieldEditable(newField);
                     } else {
                         newField = baseDialog.addComboBox(fieldInfo.getName(),
                                 IterableObjectsToNameArrayAddEmptyValue(bugTrackerProvider, fieldInfo.getName(),
                                         fieldInfo.getAllowedValues()), fieldInfo.getName());
+                        makeComboBoxFieldEditable(newField);
                     }
                 } else {
                     newField = baseDialog.addTextField(fieldInfo.getName(), fieldInfo.getName(), XForm.FieldType.TEXT);
@@ -326,6 +330,14 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             if (fieldInfo.isRequired()){
                 newField.setRequired(true, fieldInfo.getName());
             }
+        }
+    }
+
+    private void makeComboBoxFieldEditable (XFormField field) {
+        if (field instanceof com.eviware.x.impl.swing.JComboBoxFormField) {
+            com.eviware.x.impl.swing.JComboBoxFormField comboBox = (com.eviware.x.impl.swing.JComboBoxFormField) field;
+            comboBox.getComponent().setEditable(true);
+            AutoCompleteDecorator.decorate(comboBox.getComponent());
         }
     }
 
@@ -365,6 +377,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 XFormField priorityField = form.addComboBox(priorityFieldInfo.getName(),
                         IterableObjectsToNameArray(bugTrackerProvider, priorityFieldInfo.getAllowedValues()),
                         priorityFieldInfo.getName());
+                makeComboBoxFieldEditable(priorityField);
                 priorityField.setRequired(priorityFieldInfo.isRequired(), priorityFieldInfo.getName());
             }
             CimFieldInfo affectedVersionFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType,
@@ -378,11 +391,14 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                         if (affectedVersionFieldInfo.isRequired()) {
                             affectedVersionField = form.addComboBox(affectedVersionFieldInfo.getName(), values,
                                     affectedVersionFieldInfo.getName());
+                            makeComboBoxFieldEditable(affectedVersionField);
+
                         } else {
                             affectedVersionField = form.addComboBox(affectedVersionFieldInfo.getName(),
                                     IterableObjectsToNameArrayAddEmptyValue(bugTrackerProvider,
                                             affectedVersionFieldInfo.getName(), affectedVersionFieldInfo.getAllowedValues()),
                                     affectedVersionFieldInfo.getName());
+                            makeComboBoxFieldEditable(affectedVersionField);
                         }
                     }
                 }
@@ -441,6 +457,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             List<String> allProjectsList = bugTrackerProvider.getListOfAllProjects();
             XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT,
                     allProjectsList.toArray(), BugInfoDialogConsts.TARGET_ISSUE_PROJECT);
+            makeComboBoxFieldEditable(projectsCombo);
             if (StringUtils.isNullOrEmpty(selectedProject)) {
                 selectedProject = (String) (allProjectsList.toArray()[0]);
             }
@@ -448,6 +465,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             Object [] currentProjectIssueTypes = bugTrackerProvider.getListOfProjectIssueTypes(selectedProject).toArray();
             final XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE,
                     currentProjectIssueTypes, BugInfoDialogConsts.ISSUE_TYPE);
+            makeComboBoxFieldEditable(issueTypesCombo);
             projectsCombo.addFormFieldListener(new XFormFieldListener() {
                 @Override
                 public void valueChanged(XFormField xFormField, String newValue, String oldValue) {
