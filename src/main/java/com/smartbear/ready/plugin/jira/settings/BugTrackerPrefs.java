@@ -16,5 +16,7 @@ public interface BugTrackerPrefs {
     @Setting(name = JiraPrefsFactory.BUG_TRACKER_PASSWORD, description = JiraPrefsFactory.BUG_TRACKER_PASSWORD_DESCRIPTION)
     public final static String PASSWORD = BugTrackerPrefs.class.getSimpleName() + "@" + "jira-password";
 
+    @Setting(name = JiraPrefsFactory.SKIP_RELEASED_VERSIONS, description = JiraPrefsFactory.SKIP_RELEASED_VERSIONS_DESCRIPTION)
+    public final static String SKIP_VERSIONS = BugTrackerPrefs.class.getSimpleName() + "@" + "jira-skip-released-versions";
 }
 
