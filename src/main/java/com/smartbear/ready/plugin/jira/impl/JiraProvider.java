@@ -15,6 +15,7 @@ import com.atlassian.jira.rest.client.api.domain.Issue;
 import com.atlassian.jira.rest.client.api.domain.IssueType;
 import com.atlassian.jira.rest.client.api.domain.Priority;
 import com.atlassian.jira.rest.client.api.domain.Project;
+import com.atlassian.jira.rest.client.api.domain.Version;
 import com.atlassian.jira.rest.client.api.domain.input.ComplexIssueInputFieldValue;
 import com.atlassian.jira.rest.client.api.domain.input.FieldInput;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
@@ -185,6 +186,14 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     public CustomFieldOption transformToCustomFieldOption(Object object) {
         if (object instanceof CustomFieldOption) {
             return (CustomFieldOption) object;
+        }
+
+        return null;
+    }
+
+    public Version transformToVersion(Object object) {
+        if (object instanceof Version) {
+            return (Version) object;
         }
 
         return null;
@@ -563,6 +572,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         Settings soapuiSettings = SoapUI.getSettings();
         bugTrackerSettings = new BugTrackerSettings(soapuiSettings.getString(BugTrackerPrefs.DEFAULT_URL, ""),
                 soapuiSettings.getString(BugTrackerPrefs.LOGIN, ""),
-                soapuiSettings.getString(BugTrackerPrefs.PASSWORD, ""));
+                soapuiSettings.getString(BugTrackerPrefs.PASSWORD, ""),
+                soapuiSettings.getBoolean(BugTrackerPrefs.SKIP_VERSIONS, false));
     }
 }
