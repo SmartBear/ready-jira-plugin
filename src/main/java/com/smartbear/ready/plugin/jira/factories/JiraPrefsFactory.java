@@ -8,6 +8,7 @@ import com.eviware.soapui.support.types.StringToStringMap;
 import com.smartbear.ready.plugin.jira.impl.JiraProvider;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerPrefs;
 
+import javax.swing.JCheckBox;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -104,6 +105,7 @@ public class JiraPrefsFactory implements Prefs {
             JTextField bugTrackerUrl = form.appendTextField(BUG_TRACKER_URL, BUG_TRACKER_URL_DESCRIPTION);
             bugTrackerUrl.getDocument().addDocumentListener(new BugTrackerSettingsChangeListener());
             bugTrackerUrl.addFocusListener(new BugTrackerUrlFieldFocusListener());
+            JCheckBox skipReleasedVersions = form.appendCheckBox(SKIP_RELEASED_VERSIONS, SKIP_RELEASED_VERSIONS_DESCRIPTION, false);
         }
 
         return form;
@@ -130,6 +132,7 @@ public class JiraPrefsFactory implements Prefs {
         if (values.get(BUG_TRACKER_URL) != null && values.get(BUG_TRACKER_URL).equals(BUG_TRACKER_URL_IN_FIELD_DESCRIPTION)) {
             settings.setString(BugTrackerPrefs.DEFAULT_URL, values.get(BUG_TRACKER_URL));
         }
+        settings.setBoolean(BugTrackerPrefs.SKIP_VERSIONS, new Boolean(values.get(SKIP_RELEASED_VERSIONS)));
     }
 
     @Override
@@ -138,6 +141,7 @@ public class JiraPrefsFactory implements Prefs {
         values.put(BUG_TRACKER_LOGIN, settings.getString(BugTrackerPrefs.LOGIN, BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION));
         values.put(BUG_TRACKER_PASSWORD, settings.getString(BugTrackerPrefs.PASSWORD, ""));
         values.put(BUG_TRACKER_URL, settings.getString(BugTrackerPrefs.DEFAULT_URL, BUG_TRACKER_URL_IN_FIELD_DESCRIPTION));
+        values.put(SKIP_RELEASED_VERSIONS, settings.getBoolean(BugTrackerPrefs.SKIP_VERSIONS, false));
         return values;
     }
 

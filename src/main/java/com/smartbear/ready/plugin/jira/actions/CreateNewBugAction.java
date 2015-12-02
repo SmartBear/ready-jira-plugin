@@ -3,6 +3,7 @@ package com.smartbear.ready.plugin.jira.actions;
 import com.atlassian.jira.rest.client.api.NamedEntity;
 import com.atlassian.jira.rest.client.api.domain.CimFieldInfo;
 import com.atlassian.jira.rest.client.api.domain.CustomFieldOption;
+import com.atlassian.jira.rest.client.api.domain.Version;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.model.ModelItem;
 import com.eviware.soapui.model.testsuite.TestCase;
@@ -61,7 +62,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
     protected String selectedProject, selectedIssueType;
 
-    private static final List<String> skippedFieldKeys = Arrays.asList("summary", "project", "issuetype", "description", "versions", "attachment", "priority");
+    private static final List<String> skippedFieldKeys = Arrays.asList("summary", "project", "issuetype", "description", "versions", "attachment", "priority", "fixVersions");
     private static final List<String> multilineTextEditors = Arrays.asList("com.atlassian.jira.plugin.system.customfieldtypes:textarea");
 
     @Inject
@@ -254,8 +255,11 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    public static Object[] IterableObjectsToNameArray(JiraProvider bugTrackerProvider, Iterable<Object> input) {
+    public static Object[] IterableObjectsToNameArray(JiraProvider bugTrackerProvider, Iterable<Object> input, boolean addEmptyValue) {
         ArrayList<Object> objects = new ArrayList<>();
+        if (addEmptyValue) {
+            objects.add(EMPTY_VALUE_FOR_OPTIONS_FIELD);
+        }
         for (Object obj : input) {
             CustomFieldOption customFieldOption = bugTrackerProvider.transformToCustomFieldOption(obj);
             if (customFieldOption != null) {
@@ -270,17 +274,17 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         return objects.toArray();
     }
 
-    public static Object[] IterableObjectsToNameArrayAddEmptyValue(JiraProvider bugTrackerProvider, String fieldName, Iterable<Object> input) {
+    public static Object[] FixVersionsToNameArray(JiraProvider bugTrackerProvider, Iterable<Object> input,
+                                                  boolean skipReleasedVersions, boolean needEmptyValue) {
         ArrayList<Object> objects = new ArrayList<>();
-        objects.add(EMPTY_VALUE_FOR_OPTIONS_FIELD);
+        if (needEmptyValue) {
+            objects.add(EMPTY_VALUE_FOR_OPTIONS_FIELD);
+        }
         for (Object obj : input) {
-            CustomFieldOption customFieldOption = bugTrackerProvider.transformToCustomFieldOption(obj);
-            if (customFieldOption != null) {
-                objects.add(customFieldOption.getValue());
-            } else {
-                if (obj instanceof NamedEntity) {
-                    NamedEntity namedEntity = (NamedEntity) obj;
-                    objects.add(namedEntity.getName());
+            Version versionValue = bugTrackerProvider.transformToVersion(obj);
+            if (versionValue != null) {
+                if (!skipReleasedVersions || (skipReleasedVersions && !versionValue.isReleased())) {
+                    objects.add(versionValue.getName());
                 }
             }
         }
@@ -308,17 +312,10 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             CimFieldInfo fieldInfo = field.getValue();
             XFormField newField;
             if (fieldInfo.getAllowedValues() != null) {
-                Object[] values = IterableObjectsToNameArray(bugTrackerProvider, fieldInfo.getAllowedValues());
+                Object[] values = IterableObjectsToNameArray(bugTrackerProvider, fieldInfo.getAllowedValues(), !fieldInfo.isRequired());
                 if (values.length > 0) {
-                    if (fieldInfo.isRequired()) {
-                        newField = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
-                        makeComboBoxFieldEditable(newField);
-                    } else {
-                        newField = baseDialog.addComboBox(fieldInfo.getName(),
-                                IterableObjectsToNameArrayAddEmptyValue(bugTrackerProvider, fieldInfo.getName(),
-                                        fieldInfo.getAllowedValues()), fieldInfo.getName());
-                        makeComboBoxFieldEditable(newField);
-                    }
+                    newField = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
+                    makeComboBoxFieldEditable(newField);
                 } else {
                     newField = baseDialog.addTextField(fieldInfo.getName(), fieldInfo.getName(), XForm.FieldType.TEXT);
                 }
@@ -375,39 +372,54 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                     "priority");
             if (priorityFieldInfo != null) {
                 XFormField priorityField = form.addComboBox(priorityFieldInfo.getName(),
-                        IterableObjectsToNameArray(bugTrackerProvider, priorityFieldInfo.getAllowedValues()),
+                        IterableObjectsToNameArray(bugTrackerProvider, priorityFieldInfo.getAllowedValues(), false),
                         priorityFieldInfo.getName());
                 makeComboBoxFieldEditable(priorityField);
                 priorityField.setRequired(priorityFieldInfo.isRequired(), priorityFieldInfo.getName());
             }
+            //adding Affect versions field
             CimFieldInfo affectedVersionFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType,
                     "versions");
             if (affectedVersionFieldInfo != null) {
                 XFormField affectedVersionField = null;
                 if (affectedVersionFieldInfo.getAllowedValues() != null) {
                     Object[] values = IterableObjectsToNameArray(bugTrackerProvider,
-                            affectedVersionFieldInfo.getAllowedValues());
+                            affectedVersionFieldInfo.getAllowedValues(), !affectedVersionFieldInfo.isRequired());
                     if (values.length > 0) {
-                        if (affectedVersionFieldInfo.isRequired()) {
-                            affectedVersionField = form.addComboBox(affectedVersionFieldInfo.getName(), values,
-                                    affectedVersionFieldInfo.getName());
-                            makeComboBoxFieldEditable(affectedVersionField);
-
-                        } else {
-                            affectedVersionField = form.addComboBox(affectedVersionFieldInfo.getName(),
-                                    IterableObjectsToNameArrayAddEmptyValue(bugTrackerProvider,
-                                            affectedVersionFieldInfo.getName(), affectedVersionFieldInfo.getAllowedValues()),
-                                    affectedVersionFieldInfo.getName());
-                            makeComboBoxFieldEditable(affectedVersionField);
-                        }
+                        affectedVersionField = form.addComboBox(affectedVersionFieldInfo.getName(), values,
+                                affectedVersionFieldInfo.getName());
+                        makeComboBoxFieldEditable(affectedVersionField);
                     }
                 }
                 if (affectedVersionFieldInfo.isRequired() && affectedVersionField != null) {
                     affectedVersionField.setRequired(true, affectedVersionFieldInfo.getName());
                 }
             }
+            //end of adding Affect versions field
 
             addExtraFields(form, bugTrackerProvider, selectedProject, selectedIssueType);
+
+            //adding Fix Version field (filtered)
+            CimFieldInfo fixedVersionFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType,
+                    "fixVersions");
+            if (fixedVersionFieldInfo != null) {
+                XFormField fixVersionField = null;
+                if (fixedVersionFieldInfo.getAllowedValues() != null) {
+                    Object[] values = FixVersionsToNameArray(bugTrackerProvider,
+                            fixedVersionFieldInfo.getAllowedValues(),
+                            bugTrackerProvider.getBugTrackerSettings().getSkipReleasedVersions(),
+                            !fixedVersionFieldInfo.isRequired());
+                    if (values.length > 0) {
+                        fixVersionField = form.addComboBox(fixedVersionFieldInfo.getName(), values,
+                                fixedVersionFieldInfo.getName());
+                        makeComboBoxFieldEditable(fixVersionField);
+                    }
+                }
+                if (fixedVersionFieldInfo.isRequired() && fixVersionField != null) {
+                    fixVersionField.setRequired(true, fixedVersionFieldInfo.getName());
+                }
+            }
+            //end of adding Fix Version field (filtered)
 
             form.addCheckBox(BugInfoDialogConsts.ATTACH_READYAPI_LOG, BugInfoDialogConsts.ATTACH_READYAPI_LOG);
             form.addCheckBox(BugInfoDialogConsts.ATTACH_PROJECT, BugInfoDialogConsts.ATTACH_PROJECT);
