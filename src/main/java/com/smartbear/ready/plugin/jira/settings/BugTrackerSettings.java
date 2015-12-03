@@ -9,11 +9,13 @@ public class BugTrackerSettings {
     private String url;
     private String login;
     private String password;
+    private boolean skipReleasedVersions;
 
-    public BugTrackerSettings(@NotNull String url, @NotNull String login, @NotNull String password){
+    public BugTrackerSettings(@NotNull String url, @NotNull String login, @NotNull String password, boolean skipReleasedVersions){
         this.url = url;
         this.login = login;
         this.password = password;
+        this.skipReleasedVersions = skipReleasedVersions;
     }
 
     public String getUrl (){
@@ -27,4 +29,6 @@ public class BugTrackerSettings {
     public String getPassword (){
         return password;
     }
+
+    public boolean getSkipReleasedVersions () { return skipReleasedVersions; }
 }
