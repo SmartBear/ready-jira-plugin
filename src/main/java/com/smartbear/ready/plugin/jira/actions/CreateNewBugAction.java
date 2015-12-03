@@ -477,7 +477,6 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             Object [] currentProjectIssueTypes = bugTrackerProvider.getListOfProjectIssueTypes(selectedProject).toArray();
             final XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE,
                     currentProjectIssueTypes, BugInfoDialogConsts.ISSUE_TYPE);
-            makeComboBoxFieldEditable(issueTypesCombo);
             projectsCombo.addFormFieldListener(new XFormFieldListener() {
                 @Override
                 public void valueChanged(XFormField xFormField, String newValue, String oldValue) {
