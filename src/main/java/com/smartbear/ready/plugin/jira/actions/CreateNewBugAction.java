@@ -222,7 +222,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         Map<String, String> extraValues = new HashMap<String, String>();
         for (Map.Entry<String, CimFieldInfo> entry : bugTrackerProvider.getProjectFields(projectKey).get(projectKey).get(issueType).entrySet()) {
             String key = entry.getKey();
-            if (skippedFieldKeys.contains(key)) {
+            if (skippedFieldKeys.contains(key) && !key.equals("versions") && !key.equals("fixVersions")) {
                 continue;
             }
             if (!StringUtils.isNullOrEmpty(values.get(entry.getValue().getName()))) {
