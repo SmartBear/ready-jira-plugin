@@ -125,11 +125,11 @@ public class JiraPrefsFactory implements Prefs {
 
     @Override
     public void storeValues(StringToStringMap values, Settings settings) {
-        if (values.get(BUG_TRACKER_LOGIN) != null && values.get(BUG_TRACKER_LOGIN).equals(BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION)) {
+        if (values.get(BUG_TRACKER_LOGIN) != null && !values.get(BUG_TRACKER_LOGIN).equals(BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION)) {
             settings.setString(BugTrackerPrefs.LOGIN, values.get(BUG_TRACKER_LOGIN));
         }
         settings.setString(BugTrackerPrefs.PASSWORD, values.get(BUG_TRACKER_PASSWORD));
-        if (values.get(BUG_TRACKER_URL) != null && values.get(BUG_TRACKER_URL).equals(BUG_TRACKER_URL_IN_FIELD_DESCRIPTION)) {
+        if (values.get(BUG_TRACKER_URL) != null && !values.get(BUG_TRACKER_URL).equals(BUG_TRACKER_URL_IN_FIELD_DESCRIPTION)) {
             settings.setString(BugTrackerPrefs.DEFAULT_URL, values.get(BUG_TRACKER_URL));
         }
         settings.setBoolean(BugTrackerPrefs.SKIP_VERSIONS, new Boolean(values.get(SKIP_RELEASED_VERSIONS)));
