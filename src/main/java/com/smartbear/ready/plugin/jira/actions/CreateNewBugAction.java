@@ -62,7 +62,14 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
     protected String selectedProject, selectedIssueType;
 
-    private static final List<String> skippedFieldKeys = Arrays.asList("summary", "project", "issuetype", "description", "versions", "attachment", "priority", "fixVersions");
+    public static final String DESCRIPTION_FIELD_NAME = "description";
+    private static final List<String> skippedFieldKeys = Arrays.asList("summary",
+            "project",
+            "issuetype",
+            DESCRIPTION_FIELD_NAME, JiraProvider.VERSIONS_FIELD_NAME,
+            "attachment",
+            JiraProvider.PRIORITY_FIELD_NAME,
+            JiraProvider.FIX_VERSIONS_FIELD_NAME);
     private static final List<String> multilineTextEditors = Arrays.asList("com.atlassian.jira.plugin.system.customfieldtypes:textarea");
 
     @Inject
@@ -222,7 +229,10 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         Map<String, String> extraValues = new HashMap<String, String>();
         for (Map.Entry<String, CimFieldInfo> entry : bugTrackerProvider.getProjectFields(projectKey).get(projectKey).get(issueType).entrySet()) {
             String key = entry.getKey();
-            if (skippedFieldKeys.contains(key) && !key.equals("versions") && !key.equals("fixVersions")) {
+            if (skippedFieldKeys.contains(key) &&
+                    !key.equals(JiraProvider.VERSIONS_FIELD_NAME) &&
+                    !key.equals(JiraProvider.FIX_VERSIONS_FIELD_NAME) &&
+                    !key.equals(JiraProvider.PRIORITY_FIELD_NAME)) {
                 continue;
             }
             if (!StringUtils.isNullOrEmpty(values.get(entry.getValue().getName()))) {
@@ -361,15 +371,15 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             XFormField summaryField = form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY, XForm.FieldType.TEXT);
             summaryField.setRequired(true, ISSUE_SUMMARY);
             CimFieldInfo descriptionFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType,
-                    "description");
+                    DESCRIPTION_FIELD_NAME);
             if (descriptionFieldInfo != null) {
                 XFormField descriptionField = form.addTextField(BugInfoDialogConsts.ISSUE_DESCRIPTION, ISSUE_DESCRIPTION,
                         XForm.FieldType.TEXTAREA);
                 descriptionField.setRequired(getFieldInfo(bugTrackerProvider, selectedProject,
-                        selectedIssueType, "description").isRequired(), ISSUE_DESCRIPTION);
+                        selectedIssueType, DESCRIPTION_FIELD_NAME).isRequired(), ISSUE_DESCRIPTION);
             }
             CimFieldInfo priorityFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType,
-                    "priority");
+                    JiraProvider.PRIORITY_FIELD_NAME);
             if (priorityFieldInfo != null) {
                 XFormField priorityField = form.addComboBox(priorityFieldInfo.getName(),
                         IterableObjectsToNameArray(bugTrackerProvider, priorityFieldInfo.getAllowedValues(), false),
@@ -379,7 +389,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             }
             //adding Affect versions field
             CimFieldInfo affectedVersionFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType,
-                    "versions");
+                    JiraProvider.VERSIONS_FIELD_NAME);
             if (affectedVersionFieldInfo != null) {
                 XFormField affectedVersionField = null;
                 if (affectedVersionFieldInfo.getAllowedValues() != null) {
