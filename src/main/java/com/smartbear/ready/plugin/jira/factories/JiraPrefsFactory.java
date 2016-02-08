@@ -28,7 +28,7 @@ public class JiraPrefsFactory implements Prefs {
     public static final String BUG_TRACKER_URL_IN_FIELD_DESCRIPTION = "The URL of your JIRA instance (https://...)";
     public static final String JIRA_PREFS_TITLE = "JIRA";
     public static final String SKIP_RELEASED_VERSIONS = "Hide released versions:";
-    public static final String SKIP_RELEASED_VERSIONS_DESCRIPTION = "Do not show released versions";
+    public static final String SKIP_RELEASED_VERSIONS_DESCRIPTION = "Do not show released versions for Fix Version/s field";
 
     private SimpleForm form;
 
