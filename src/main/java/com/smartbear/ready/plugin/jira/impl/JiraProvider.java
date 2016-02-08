@@ -65,6 +65,15 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     public static final String BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED = "Unable to create a JIRA item.\nThe JIRA Integration plugin's settings are not configured or invalid.";
     public static final String INCORRECT_PROTOCOL_IN_THE_JIRA_URL = "\nPerhaps,  you specified the HTTP protocol in the JIRA URL instead of HTTPS.";
     public static final String INCORRECT_PROTOCOL_ERROR_CODE = "301";
+    public static final String PRIORITY_FIELD_NAME = "priority";
+    public static final String FIX_VERSIONS_FIELD_NAME = "fixVersions";
+    public static final String VERSIONS_FIELD_NAME = "versions";
+    public static final String COMPONENTS_FIELD_NAME = "components";
+    public static final String ASSIGNEE_FIELD_NAME = "assignee";
+    public static final String PARENT_FIELD_NAME = "parent";
+    public static final String RESOLUTION_FIELD_NAME = "resolution";
+    public static final String NAME_FIELD_NAME = "name";
+    public static final String VALUE_FIELD_NAME = "value";
 
     private ModelItem activeElement;
     private JiraRestClient restClient = null;
@@ -329,9 +338,9 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             issueInputBuilder.setSummary(summary);
             issueInputBuilder.setDescription(description);
             for (final Map.Entry<String, String> extraRequiredValue : extraRequiredValues.entrySet()) {
-                if (extraRequiredValue.getKey().equals("priority")) {
+                if (extraRequiredValue.getKey().equals(PRIORITY_FIELD_NAME)) {
                     issueInputBuilder.setPriority(getPriorityByName(extraRequiredValue.getValue()));
-                } else if (extraRequiredValue.getKey().equals("components")) {
+                } else if (extraRequiredValue.getKey().equals(COMPONENTS_FIELD_NAME)) {
                     issueInputBuilder.setComponentsNames(new Iterable<String>() {
                         @Override
                         public Iterator<String> iterator() {
@@ -356,7 +365,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                             };
                         }
                     });
-                } else if (extraRequiredValue.getKey().equals("versions")) {
+                } else if (extraRequiredValue.getKey().equals(VERSIONS_FIELD_NAME)) {
                     issueInputBuilder.setAffectedVersionsNames(new Iterable<String>() {
                         @Override
                         public Iterator<String> iterator() {
@@ -381,7 +390,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                             };
                         }
                     });
-                } else if (extraRequiredValue.getKey().equals("fixVersions")) {
+                } else if (extraRequiredValue.getKey().equals(FIX_VERSIONS_FIELD_NAME)) {
                     issueInputBuilder.setFixVersionsNames(new Iterable<String>() {
                         @Override
                         public Iterator<String> iterator() {
@@ -406,20 +415,20 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                             };
                         }
                     });
-                } else if (extraRequiredValue.getKey().equals("assignee")) {
+                } else if (extraRequiredValue.getKey().equals(ASSIGNEE_FIELD_NAME)) {
                     issueInputBuilder.setAssigneeName(extraRequiredValue.getValue());
-                } else if (extraRequiredValue.getKey().equals("parent")) {
+                } else if (extraRequiredValue.getKey().equals(PARENT_FIELD_NAME)) {
                     Map<String, Object> parent = new HashMap<String, Object>();
                     parent.put("key", extraRequiredValue.getValue());
-                    FieldInput parentField = new FieldInput("parent", new ComplexIssueInputFieldValue(parent));
+                    FieldInput parentField = new FieldInput(PARENT_FIELD_NAME, new ComplexIssueInputFieldValue(parent));
                     issueInputBuilder.setFieldInput(parentField);
-                } else if (extraRequiredValue.getKey().equals("resolution")) {
+                } else if (extraRequiredValue.getKey().equals(RESOLUTION_FIELD_NAME)) {
                     Map<String, Object> customOptionValue = new HashMap<>();
-                    customOptionValue.put("name", extraRequiredValue.getValue());
+                    customOptionValue.put(NAME_FIELD_NAME, extraRequiredValue.getValue());
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
                 } else if (isFieldWithPredefinedValues(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
                     Map<String, Object> customOptionValue = new HashMap<>();
-                    customOptionValue.put("value", extraRequiredValue.getValue());
+                    customOptionValue.put(VALUE_FIELD_NAME, extraRequiredValue.getValue());
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
                 } else if (isArrayValue(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), Arrays.asList(extraRequiredValue.getValue().split("\\s*,\\s*")));
