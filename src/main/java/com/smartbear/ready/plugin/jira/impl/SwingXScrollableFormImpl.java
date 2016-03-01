@@ -229,6 +229,12 @@ public class SwingXScrollableFormImpl implements XForm {
             JTextAreaFormField field = new JTextAreaFormField();
             field.getTextArea().setColumns(40);
             field.getTextArea().setRows(5);
+            Dimension textAreaDimension = field.getTextArea().getPreferredSize();
+            int bordersSize = 2;
+            textAreaDimension.setSize(textAreaDimension.getWidth() + bordersSize,
+                    textAreaDimension.getHeight() + bordersSize);
+            field.getTextArea().setColumns(40 - bordersSize);
+            field.getComponent().setPreferredSize(textAreaDimension);
             field.setToolTip(description);
             addComponent(name, field);
             return field;
