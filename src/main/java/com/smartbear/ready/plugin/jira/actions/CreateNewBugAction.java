@@ -32,11 +32,9 @@ import com.smartbear.ready.plugin.jira.impl.IssueCreationResult;
 import com.smartbear.ready.plugin.jira.impl.IssueInfoDialog;
 import com.smartbear.ready.plugin.jira.impl.JiraProvider;
 import com.smartbear.ready.plugin.jira.impl.SwingXScrollableFormDialogBuilder;
-import com.smartbear.ready.plugin.jira.impl.SwingXScrollableFormImpl;
 import com.smartbear.ready.plugin.jira.impl.XFormDialogEx;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
-import javax.swing.JComboBox;
 import java.awt.GraphicsEnvironment;
 import java.net.URI;
 import java.util.ArrayList;
@@ -66,7 +64,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     private static final List<String> skippedFieldKeys = Arrays.asList("summary",
             "project",
             "issuetype",
-            DESCRIPTION_FIELD_NAME, JiraProvider.VERSIONS_FIELD_NAME,
+            DESCRIPTION_FIELD_NAME,
+            JiraProvider.VERSIONS_FIELD_NAME,
             "attachment",
             JiraProvider.PRIORITY_FIELD_NAME,
             JiraProvider.FIX_VERSIONS_FIELD_NAME);
@@ -125,7 +124,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         final String description;
         final Map<String, String> extraValues;
         IssueCreationResult result;
-        public JiraIssueCreatorWorker(JiraProvider bugTrackerProvider, String projectKey, String issueType, String summary, String description, Map<String, String> extraValues){
+        public JiraIssueCreatorWorker(JiraProvider bugTrackerProvider, String projectKey, String issueType,
+                                      String summary, String description, Map<String, String> extraValues){
             this.bugTrackerProvider = bugTrackerProvider;
             this.projectKey = projectKey;
             this.issueType = issueType;
@@ -160,7 +160,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         final XFormDialog issueDetails;
         StringBuilder resultError;
         boolean isAttachmentSuccess;
-        public JiraIssueAttachmentWorker (JiraProvider bugTrackerProvider, IssueCreationResult creationResult, XFormDialog issueDetails){
+        public JiraIssueAttachmentWorker (JiraProvider bugTrackerProvider, IssueCreationResult creationResult,
+                                          XFormDialog issueDetails){
             this.bugTrackerProvider = bugTrackerProvider;
             this.creationResult = creationResult;
             this.issueDetails = issueDetails;
@@ -172,7 +173,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             URI newIssueAttachURI = bugTrackerProvider.getIssue(creationResult.getIssue().getKey()).getAttachmentsUri();
             resultError = new StringBuilder();
             if (issueDetails.getBooleanValue(BugInfoDialogConsts.ATTACH_READYAPI_LOG)) {
-                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerProvider.getActiveItemName() + ".log", bugTrackerProvider.getReadyApiLog());
+                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI,
+                        bugTrackerProvider.getActiveItemName() + ".log", bugTrackerProvider.getReadyApiLog());
                 if (!attachResult.getSuccess()) {
                     isAttachmentSuccess = false;
                     resultError.append(attachResult.getError());
@@ -181,7 +183,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             }
 
             if (issueDetails.getBooleanValue(BugInfoDialogConsts.ATTACH_PROJECT)) {
-                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, bugTrackerProvider.getRootProjectName() + ".xml", bugTrackerProvider.getRootProject());
+                AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI,
+                        bugTrackerProvider.getRootProjectName() + ".xml", bugTrackerProvider.getRootProject());
                 if (!attachResult.getSuccess()) {
                     isAttachmentSuccess = false;
                     resultError.append(attachResult.getError());
@@ -227,7 +230,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         String projectKey = selectedProject;
         String issueType = selectedIssueType;
         Map<String, String> extraValues = new HashMap<String, String>();
-        for (Map.Entry<String, CimFieldInfo> entry : bugTrackerProvider.getProjectFields(projectKey).get(projectKey).get(issueType).entrySet()) {
+        for (Map.Entry<String, CimFieldInfo> entry :
+                bugTrackerProvider.getProjectFields(projectKey).get(projectKey).get(issueType).entrySet()) {
             String key = entry.getKey();
             if (skippedFieldKeys.contains(key) &&
                     !key.equals(JiraProvider.VERSIONS_FIELD_NAME) &&
@@ -239,16 +243,20 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 extraValues.put(entry.getKey(), values.get(entry.getValue().getName()));
             }
         }
-        XProgressDialog issueCreationProgressDialog = UISupport.getDialogs().createProgressDialog(NEW_ISSUE_DETAILS_FORM_NAME, 100, PLEASE_WAIT, false);
-        JiraIssueCreatorWorker worker = new JiraIssueCreatorWorker(bugTrackerProvider, projectKey, issueType, summary, description, extraValues);
+        XProgressDialog issueCreationProgressDialog = UISupport.getDialogs().createProgressDialog(
+                NEW_ISSUE_DETAILS_FORM_NAME, 100, PLEASE_WAIT, false);
+        JiraIssueCreatorWorker worker = new JiraIssueCreatorWorker(bugTrackerProvider, projectKey,
+                issueType, summary, description, extraValues);
         try {
             issueCreationProgressDialog.run(worker);
         } catch (Exception e) {
         }
         IssueCreationResult result = worker.getResult();
         if (result.getSuccess()) {
-            JiraIssueAttachmentWorker attachmentWorker = new JiraIssueAttachmentWorker(bugTrackerProvider, result, issueDetails);
-            XProgressDialog addingAttachmentProgressDialog = UISupport.getDialogs().createProgressDialog(ADDING_ATTACHMENTS, 100, PLEASE_WAIT, false);
+            JiraIssueAttachmentWorker attachmentWorker =
+                    new JiraIssueAttachmentWorker(bugTrackerProvider, result, issueDetails);
+            XProgressDialog addingAttachmentProgressDialog =
+                    UISupport.getDialogs().createProgressDialog(ADDING_ATTACHMENTS, 100, PLEASE_WAIT, false);
             try {
                 addingAttachmentProgressDialog.run(attachmentWorker);
             } catch (Exception e) {
@@ -257,7 +265,9 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             if (!attachmentWorker.getAttachmentSuccess()) {
                 UISupport.showErrorMessage(attachmentWorker.getResultError().toString());
             } else {
-                IssueInfoDialog.showDialog(issueType, bugTrackerProvider.getBugTrackerSettings().getUrl().concat("/browse/").concat(result.getIssue().getKey()), result.getIssue().getKey());//TODO: make link correct for all cases
+                IssueInfoDialog.showDialog(issueType,
+                        bugTrackerProvider.getBugTrackerSettings().getUrl().concat("/browse/").concat(result.getIssue().getKey()),
+                        result.getIssue().getKey());//TODO: make link correct for all cases
             }
 
         } else {
@@ -366,9 +376,11 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
         @Override
         public Object construct(XProgressMonitor xProgressMonitor) {
-            SwingXScrollableFormDialogBuilder builder = new SwingXScrollableFormDialogBuilder(NEW_ISSUE_DIALOG_CAPTION + selectedIssueType + " item");
+            SwingXScrollableFormDialogBuilder builder = new SwingXScrollableFormDialogBuilder(NEW_ISSUE_DIALOG_CAPTION +
+                    selectedIssueType + " item");
             XForm form = builder.createForm("Basic");
-            XFormField summaryField = form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY, XForm.FieldType.TEXT);
+            XFormField summaryField = form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY,
+                    XForm.FieldType.TEXT);
             summaryField.setRequired(true, ISSUE_SUMMARY);
             CimFieldInfo descriptionFieldInfo = getFieldInfo(bugTrackerProvider, selectedProject, selectedIssueType,
                     DESCRIPTION_FIELD_NAME);
@@ -453,9 +465,11 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    private XFormDialog createIssueDetailsDialog(final JiraProvider bugTrackerProvider, final String selectedProject, final String selectedIssueType) {
+    private XFormDialog createIssueDetailsDialog(final JiraProvider bugTrackerProvider, final String selectedProject,
+                                                 final String selectedIssueType) {
         RequiredFieldsWorker worker = new RequiredFieldsWorker(bugTrackerProvider, selectedProject, selectedIssueType);
-        XProgressDialog readingProjectSettingsProgressDialog = UISupport.getDialogs().createProgressDialog(READING_JIRA_SETTINGS_FOR_SELECTED_PROJECT_AND_ISSUE_TYPE, 100, PLEASE_WAIT, false);
+        XProgressDialog readingProjectSettingsProgressDialog = UISupport.getDialogs().createProgressDialog(
+                READING_JIRA_SETTINGS_FOR_SELECTED_PROJECT_AND_ISSUE_TYPE, 100, PLEASE_WAIT, false);
         try {
             readingProjectSettingsProgressDialog.run(worker);
         } catch (Exception e) {
@@ -525,7 +539,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
     private XFormDialog createInitialSetupDialog(final JiraProvider bugTrackerProvider) {
         InitialDialogWorker worker = new InitialDialogWorker(bugTrackerProvider);
-        XProgressDialog readInitialInfoProgressDialog = UISupport.getDialogs().createProgressDialog(READING_JIRA_SETTINGS, 100, PLEASE_WAIT, false);
+        XProgressDialog readInitialInfoProgressDialog = UISupport.getDialogs().createProgressDialog(
+                READING_JIRA_SETTINGS, 100, PLEASE_WAIT, false);
         try {
             readInitialInfoProgressDialog.run(worker);
         } catch (Exception e) {
