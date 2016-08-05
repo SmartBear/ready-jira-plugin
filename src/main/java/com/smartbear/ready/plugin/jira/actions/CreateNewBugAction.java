@@ -269,6 +269,9 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
             if (!attachmentWorker.getAttachmentSuccess()) {
                 UISupport.showErrorMessage(attachmentWorker.getResultError().toString());
+                if (issueDetails.show()) {
+                    handleOkAction(bugTrackerProvider, issueDetails);
+                }
             } else {
                 IssueInfoDialog.showDialog(issueType,
                         bugTrackerProvider.getBugTrackerSettings().getUrl().concat("/browse/").concat(result.getIssue().getKey()),
@@ -277,6 +280,9 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
         } else {
             UISupport.showErrorMessage(result.getError());
+            if (issueDetails.show()) {
+                handleOkAction(bugTrackerProvider, issueDetails);
+            }
         }
     }
 
