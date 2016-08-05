@@ -160,27 +160,27 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                 requestedProjects.put(key, restClient.getProjectClient().getProject(key).get());
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
-                return new JiraApiCallResult<Project>(e);
+                return new JiraApiCallResult<>(e);
             } catch (ExecutionException e) {
                 logger.error(e.getMessage());
-                return new JiraApiCallResult<Project>(e);
+                return new JiraApiCallResult<>(e);
             }
         }
-        return new JiraApiCallResult<Project>(requestedProjects.get(key));
+        return new JiraApiCallResult<>(requestedProjects.get(key));
     }
 
     private JiraApiCallResult<OptionalIterable<IssueType>> getProjectIssueTypes(String projectKey) {
         JiraApiCallResult<Project> project = getProjectByKey(projectKey);
         if (!project.isSuccess()) {
-            return new JiraApiCallResult<OptionalIterable<IssueType>>(project.getError());
+            return new JiraApiCallResult<>(project.getError());
         }
-        return new JiraApiCallResult<OptionalIterable<IssueType>>(project.getResult().getIssueTypes());
+        return new JiraApiCallResult<>(project.getResult().getIssueTypes());
     }
 
     public List<String> getListOfProjectIssueTypes(String projectKey) {
         JiraApiCallResult<OptionalIterable<IssueType>> result = getProjectIssueTypes(projectKey);
         if (!result.isSuccess()) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
 
         List<String> issueTypeList = new ArrayList<String>();
@@ -214,12 +214,12 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             try {
                 priorities = client.getPriorities().get();
             } catch (InterruptedException e) {
-                return new JiraApiCallResult<Iterable<Priority>>(e);
+                return new JiraApiCallResult<>(e);
             } catch (ExecutionException e) {
-                return new JiraApiCallResult<Iterable<Priority>>(e);
+                return new JiraApiCallResult<>(e);
             }
         }
-        return new JiraApiCallResult<Iterable<Priority>>(priorities);
+        return new JiraApiCallResult<>(priorities);
     }
 
     private Priority getPriorityByName(String priorityName) {
@@ -294,12 +294,12 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     projectFields.put(cimProject.getKey(), issueTypeFields);
                 }
             } catch (InterruptedException e) {
-                return new JiraApiCallResult<Map<String, Map<String, Map<String, CimFieldInfo>>>>(e);
+                return new JiraApiCallResult<>(e);
             } catch (ExecutionException e) {
-                return new JiraApiCallResult<Map<String, Map<String, Map<String, CimFieldInfo>>>>(e);
+                return new JiraApiCallResult<>(e);
             }
         }
-        return new JiraApiCallResult<Map<String, Map<String, Map<String, CimFieldInfo>>>>(projectFields);
+        return new JiraApiCallResult<>(projectFields);
     }
 
     private CimFieldInfo getFieldInfo(String projectKey, String issueTypeKey, String fieldName) {
@@ -515,7 +515,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
 
         if (fileAppender != null) {
             try {
-                return (InputStream) new FileInputStream(fileAppender.getFile());
+                return new FileInputStream(fileAppender.getFile());
             } catch (FileNotFoundException e) {
                 JiraProvider.logger.error(e.getMessage());
             }
