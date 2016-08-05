@@ -6,6 +6,7 @@ import com.atlassian.jira.rest.client.api.domain.CustomFieldOption;
 import com.atlassian.jira.rest.client.api.domain.Version;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.model.ModelItem;
+import com.eviware.soapui.model.support.ModelSupport;
 import com.eviware.soapui.model.testsuite.TestCase;
 import com.eviware.soapui.model.testsuite.TestStep;
 import com.eviware.soapui.model.testsuite.TestSuite;
@@ -57,6 +58,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     public static final String PATH_TO_TOOLBAR_ICON = "com/smartbear/ready/plugin/jira/icons/Bug-tracker-icon_20-20-px.png";
     public static final String EMPTY_VALUE_FOR_OPTIONS_FIELD = "";
     private static String NEW_ISSUE_DIALOG_CAPTION = "Create a new ";
+    private static String READYAPI_PROJECT_NAME = "";
 
     protected String selectedProject, selectedIssueType;
 
@@ -88,11 +90,12 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             UISupport.showErrorMessage(JiraProvider.BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED);
             return;
         }
-        if (target instanceof Workspace){
+        if (target instanceof Workspace) {
             UISupport.showErrorMessage(WORKSPACE_ITEM_SELECTED);
             return;
         }
         bugTrackerProvider.setActiveItem(target);
+        READYAPI_PROJECT_NAME = getReadyAPIProjectName(target);
         List<String> projects = bugTrackerProvider.getListOfAllProjects();
         if (projects == null || projects.size() == 0) {
             UISupport.showErrorMessage(NO_AVAILABLE_JIRA_PROJECTS);
@@ -101,7 +104,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         XFormDialog dialogOne = createInitialSetupDialog(bugTrackerProvider);
         if (dialogOne.show()) {
             XFormDialog dialogTwo = createIssueDetailsDialog(bugTrackerProvider, selectedProject, selectedIssueType);
-            XFormDialogEx dialogTwoEx = (XFormDialogEx)dialogTwo;
+            XFormDialogEx dialogTwoEx = (XFormDialogEx) dialogTwo;
             if (dialogTwoEx != null) {
                 int screenHeight = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight();
                 dialogTwoEx.setHeight(7 * screenHeight / 10);
@@ -116,7 +119,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    private class JiraIssueCreatorWorker implements Worker{
+    private class JiraIssueCreatorWorker implements Worker {
         final JiraProvider bugTrackerProvider;
         final String projectKey;
         final String issueType;
@@ -124,8 +127,9 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         final String description;
         final Map<String, String> extraValues;
         IssueCreationResult result;
+
         public JiraIssueCreatorWorker(JiraProvider bugTrackerProvider, String projectKey, String issueType,
-                                      String summary, String description, Map<String, String> extraValues){
+                                      String summary, String description, Map<String, String> extraValues) {
             this.bugTrackerProvider = bugTrackerProvider;
             this.projectKey = projectKey;
             this.issueType = issueType;
@@ -149,7 +153,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             return false;
         }
 
-        public IssueCreationResult getResult () {
+        public IssueCreationResult getResult() {
             return result;
         }
     }
@@ -160,8 +164,9 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         final XFormDialog issueDetails;
         StringBuilder resultError;
         boolean isAttachmentSuccess;
-        public JiraIssueAttachmentWorker (JiraProvider bugTrackerProvider, IssueCreationResult creationResult,
-                                          XFormDialog issueDetails){
+
+        public JiraIssueAttachmentWorker(JiraProvider bugTrackerProvider, IssueCreationResult creationResult,
+                                         XFormDialog issueDetails) {
             this.bugTrackerProvider = bugTrackerProvider;
             this.creationResult = creationResult;
             this.issueDetails = issueDetails;
@@ -214,11 +219,11 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             return false;
         }
 
-        public boolean getAttachmentSuccess(){
+        public boolean getAttachmentSuccess() {
             return isAttachmentSuccess;
         }
 
-        public StringBuilder getResultError (){
+        public StringBuilder getResultError() {
             return resultError;
         }
     }
@@ -311,7 +316,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         return objects.toArray();
     }
 
-    private CimFieldInfo getFieldInfo (JiraProvider bugTrackerProvider, String selectedProject, String selectedIssueType, String fieldInfoKey){
+    private CimFieldInfo getFieldInfo(JiraProvider bugTrackerProvider, String selectedProject, String selectedIssueType, String fieldInfoKey) {
         Map<String, Map<String, Map<String, CimFieldInfo>>> allFields = bugTrackerProvider.getProjectFields(selectedProject);
         for (Map.Entry<String, CimFieldInfo> field : allFields.get(selectedProject).get(selectedIssueType).entrySet()) {
             String key = field.getKey();
@@ -344,13 +349,13 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 newField = baseDialog.addTextField(fieldInfo.getName(), fieldInfo.getName(),
                         isMultilineTextEditor ? XForm.FieldType.TEXTAREA : XForm.FieldType.TEXT);
             }
-            if (fieldInfo.isRequired()){
+            if (fieldInfo.isRequired()) {
                 newField.setRequired(true, fieldInfo.getName());
             }
         }
     }
 
-    private void makeComboBoxFieldEditable (XFormField field) {
+    private void makeComboBoxFieldEditable(XFormField field) {
         if (field instanceof com.eviware.x.impl.swing.JComboBoxFormField) {
             com.eviware.x.impl.swing.JComboBoxFormField comboBox = (com.eviware.x.impl.swing.JComboBoxFormField) field;
             comboBox.getComponent().setEditable(true);
@@ -358,7 +363,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    private class RequiredFieldsWorker implements Worker{
+    private class RequiredFieldsWorker implements Worker {
         public static final String ISSUE_SUMMARY = "Summary";
         public static final String ISSUE_DESCRIPTION = "Description";
         public static final String ATTACH_FILE = "Attach a file";
@@ -368,7 +373,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         final String selectedIssueType;
         XFormDialog dialog;
 
-        public RequiredFieldsWorker (JiraProvider bugTrackerProvider, String selectedProject, String selectedIssueType){
+        public RequiredFieldsWorker(JiraProvider bugTrackerProvider, String selectedProject, String selectedIssueType) {
             this.selectedProject = selectedProject;
             this.selectedIssueType = selectedIssueType;
             this.bugTrackerProvider = bugTrackerProvider;
@@ -377,7 +382,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         @Override
         public Object construct(XProgressMonitor xProgressMonitor) {
             SwingXScrollableFormDialogBuilder builder = new SwingXScrollableFormDialogBuilder(NEW_ISSUE_DIALOG_CAPTION +
-                    selectedIssueType + " item");
+                    selectedIssueType + " item in  [" + READYAPI_PROJECT_NAME + "] Project");
             XForm form = builder.createForm("Basic");
             XFormField summaryField = form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY,
                     XForm.FieldType.TEXT);
@@ -460,7 +465,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             return false;
         }
 
-        public XFormDialog getDialog (){
+        public XFormDialog getDialog() {
             return dialog;
         }
     }
@@ -482,7 +487,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         final JiraProvider bugTrackerProvider;
         XFormDialog dialog;
 
-        public InitialDialogWorker (JiraProvider bugTrackerProvider){
+        public InitialDialogWorker(JiraProvider bugTrackerProvider) {
             this.bugTrackerProvider = bugTrackerProvider;
         }
 
@@ -497,7 +502,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 selectedProject = (String) (allProjectsList.toArray()[0]);
             }
             projectsCombo.setValue(selectedProject);
-            Object [] currentProjectIssueTypes = bugTrackerProvider.getListOfProjectIssueTypes(selectedProject).toArray();
+            Object[] currentProjectIssueTypes = bugTrackerProvider.getListOfProjectIssueTypes(selectedProject).toArray();
             final XFormOptionsField issueTypesCombo = form.addComboBox(BugInfoDialogConsts.ISSUE_TYPE,
                     currentProjectIssueTypes, BugInfoDialogConsts.ISSUE_TYPE);
             projectsCombo.addFormFieldListener(new XFormFieldListener() {
@@ -532,7 +537,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             return false;
         }
 
-        public XFormDialog getDialog (){
+        public XFormDialog getDialog() {
             return dialog;
         }
     }
@@ -557,5 +562,9 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
 
         return false;
+    }
+
+    private String getReadyAPIProjectName(ModelItem modelItem) {
+        return ModelSupport.getModelItemProject(modelItem).getName();
     }
 }
