@@ -6,6 +6,7 @@ import com.atlassian.jira.rest.client.api.domain.CustomFieldOption;
 import com.atlassian.jira.rest.client.api.domain.Version;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.model.ModelItem;
+import com.eviware.soapui.model.support.ModelSupport;
 import com.eviware.soapui.model.testsuite.TestCase;
 import com.eviware.soapui.model.testsuite.TestStep;
 import com.eviware.soapui.model.testsuite.TestSuite;
@@ -564,19 +565,6 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     }
 
     private String getReadyAPIProjectName(ModelItem modelItem) {
-        if (modelItem instanceof WsdlProject) {
-            WsdlProject project = (WsdlProject) modelItem;
-            return project.getName();
-        } else if (modelItem instanceof TestSuite) {
-            TestSuite testSuite = (TestSuite) modelItem;
-            return testSuite.getProject().getName();
-        } else if (modelItem instanceof TestCase) {
-            TestCase testCase = (TestCase) modelItem;
-            return testCase.getTestSuite().getProject().getName();
-        } else if (modelItem instanceof TestStep) {
-            TestStep testStep = (TestStep) modelItem;
-            return testStep.getTestCase().getTestSuite().getProject().getName();
-        }
-        return "";
+        return ModelSupport.getModelItemProject(modelItem).getName();
     }
 }
