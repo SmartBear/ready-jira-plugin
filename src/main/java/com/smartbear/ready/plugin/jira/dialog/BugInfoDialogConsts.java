@@ -22,7 +22,7 @@ public interface BugInfoDialogConsts {
 
     public final static String ATTACH_LOADUI_LOG = "Attach LoadUI NG log file";
     public final static String ATTACH_SERVICEV_LOG = "Attach ServiceV log file";
-    public final static String ATTACH_READYAPI_LOG = "Attach Ready! API log file";
+    public final static String ATTACH_READYAPI_LOG = "Attach ReadyAPI log file";
 
     public final static String ATTACH_ANY_FILE = "Attach additional files";
 }
