@@ -12,6 +12,7 @@ import com.atlassian.jira.rest.client.api.domain.CimIssueType;
 import com.atlassian.jira.rest.client.api.domain.CimProject;
 import com.atlassian.jira.rest.client.api.domain.CustomFieldOption;
 import com.atlassian.jira.rest.client.api.domain.Issue;
+import com.atlassian.jira.rest.client.api.domain.IssueFieldId;
 import com.atlassian.jira.rest.client.api.domain.IssueType;
 import com.atlassian.jira.rest.client.api.domain.Priority;
 import com.atlassian.jira.rest.client.api.domain.Project;
@@ -426,6 +427,9 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     Map<String, Object> customOptionValue = new HashMap<>();
                     customOptionValue.put(NAME_FIELD_NAME, extraRequiredValue.getValue());
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
+                } else if (extraRequiredValue.getKey().equals(IssueFieldId.REPORTER_FIELD.id)) {
+                    issueInputBuilder.setFieldInput(new FieldInput(IssueFieldId.REPORTER_FIELD,
+                            ComplexIssueInputFieldValue.with("name", extraRequiredValue.getValue())));
                 } else if (isFieldWithPredefinedValues(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
                     Map<String, Object> customOptionValue = new HashMap<>();
                     customOptionValue.put(VALUE_FIELD_NAME, extraRequiredValue.getValue());
@@ -436,7 +440,6 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), extraRequiredValue.getValue());
                 }
             }
-
             Promise<BasicIssue> issue = restClient.getIssueClient().createIssue(issueInputBuilder.build());
             basicIssue = issue.get();
         } catch (InterruptedException e) {
