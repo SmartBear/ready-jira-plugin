@@ -17,10 +17,10 @@ import com.atlassian.jira.rest.client.api.domain.IssueType;
 import com.atlassian.jira.rest.client.api.domain.Priority;
 import com.atlassian.jira.rest.client.api.domain.Project;
 import com.atlassian.jira.rest.client.api.domain.Version;
+import com.atlassian.jira.rest.client.api.domain.User;
 import com.atlassian.jira.rest.client.api.domain.input.ComplexIssueInputFieldValue;
 import com.atlassian.jira.rest.client.api.domain.input.FieldInput;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
-import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
 import com.atlassian.util.concurrent.Promise;
 import com.eviware.soapui.SoapUI;
 import com.eviware.soapui.actions.SoapUIPreferencesAction;
@@ -30,6 +30,9 @@ import com.eviware.soapui.model.settings.Settings;
 import com.eviware.soapui.model.support.ModelSupport;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
+import com.smartbear.ready.plugin.jira.clients.AsynchronousJiraRestClientEx;
+import com.smartbear.ready.plugin.jira.clients.AsynchronousUserSearchRestClient;
+import com.smartbear.ready.plugin.jira.factories.AsynchronousJiraRestClientFactoryEx;
 import com.smartbear.ready.plugin.jira.factories.JiraPrefsFactory;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerPrefs;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerSettings;
@@ -65,6 +68,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     private final static String BUG_TRACKER_URI_IS_INCORRECT = "The JIRA URL format is incorrect.";
     public static final String BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED = "Unable to create a JIRA item.\nThe JIRA Integration plugin's settings are not configured or invalid.";
     public static final String INCORRECT_PROTOCOL_IN_THE_JIRA_URL = "\nPerhaps,  you specified the HTTP protocol in the JIRA URL instead of HTTPS.";
+    public static final String USER_NAME_NOT_FOUND = "%s user is not found";
     public static final String INCORRECT_PROTOCOL_ERROR_CODE = "301";
     public static final String PRIORITY_FIELD_NAME = "priority";
     public static final String FIX_VERSIONS_FIELD_NAME = "fixVersions";
@@ -108,7 +112,8 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                 return;
             }
         }
-        final AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
+        final AsynchronousJiraRestClientFactoryEx factory = new AsynchronousJiraRestClientFactoryEx();
+
         try {
             restClient = factory.createWithBasicHttpAuthentication(new URI(bugTrackerSettings.getUrl()), bugTrackerSettings.getLogin(), bugTrackerSettings.getPassword());
         } catch (URISyntaxException e) {
@@ -428,8 +433,9 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     customOptionValue.put(NAME_FIELD_NAME, extraRequiredValue.getValue());
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
                 } else if (extraRequiredValue.getKey().equals(IssueFieldId.REPORTER_FIELD.id)) {
+                    String username = getUserName(extraRequiredValue.getValue());
                     issueInputBuilder.setFieldInput(new FieldInput(IssueFieldId.REPORTER_FIELD,
-                            ComplexIssueInputFieldValue.with("name", extraRequiredValue.getValue())));
+                            ComplexIssueInputFieldValue.with("name", username)));
                 } else if (isFieldWithPredefinedValues(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
                     Map<String, Object> customOptionValue = new HashMap<>();
                     customOptionValue.put(VALUE_FIELD_NAME, extraRequiredValue.getValue());
@@ -454,9 +460,20 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                 errorMessage += INCORRECT_PROTOCOL_IN_THE_JIRA_URL;
             }
             return new IssueCreationResult(errorMessage);
+        } catch (Exception e) {
+            return new IssueCreationResult(e.getMessage());
         }
 
         return new IssueCreationResult(basicIssue);
+    }
+
+    private String getUserName(String username) throws Exception {
+        AsynchronousUserSearchRestClient userSearchRestClient = ((AsynchronousJiraRestClientEx) restClient).getUserSearchRestClient();
+        User user = userSearchRestClient.getUser(username).get();
+        if (user == null) {
+            throw new Exception(String.format(USER_NAME_NOT_FOUND, username));
+        }
+        return user.getName();
     }
 
     protected void finalize() throws Throwable {
