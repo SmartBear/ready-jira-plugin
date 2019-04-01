@@ -58,7 +58,6 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     public static final String PATH_TO_TOOLBAR_ICON = "com/smartbear/ready/plugin/jira/icons/Bug-tracker-icon_20-20-px.png";
     public static final String EMPTY_VALUE_FOR_OPTIONS_FIELD = "";
     private static String NEW_ISSUE_DIALOG_CAPTION = "Create a new ";
-    private static String READYAPI_PROJECT_NAME = "";
 
     protected String selectedProject, selectedIssueType;
 
@@ -95,7 +94,6 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             return;
         }
         bugTrackerProvider.setActiveItem(target);
-        READYAPI_PROJECT_NAME = getReadyAPIProjectName(target);
         List<String> projects = bugTrackerProvider.getListOfAllProjects();
         if (projects == null || projects.size() == 0) {
             UISupport.showErrorMessage(NO_AVAILABLE_JIRA_PROJECTS);
@@ -388,7 +386,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         @Override
         public Object construct(XProgressMonitor xProgressMonitor) {
             SwingXScrollableFormDialogBuilder builder = new SwingXScrollableFormDialogBuilder(NEW_ISSUE_DIALOG_CAPTION +
-                    selectedIssueType + " item in  [" + READYAPI_PROJECT_NAME + "] Project");
+                    selectedIssueType + " item in  [" + selectedProject + "] Project");
             XForm form = builder.createForm("Basic");
             XFormField summaryField = form.addTextField(BugInfoDialogConsts.ISSUE_SUMMARY, ISSUE_SUMMARY,
                     XForm.FieldType.TEXT);
@@ -568,9 +566,5 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
 
         return false;
-    }
-
-    private String getReadyAPIProjectName(ModelItem modelItem) {
-        return ModelSupport.getModelItemProject(modelItem).getName();
     }
 }
