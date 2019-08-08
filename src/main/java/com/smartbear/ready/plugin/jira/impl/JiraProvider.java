@@ -36,8 +36,10 @@ import com.smartbear.ready.plugin.jira.factories.AsynchronousJiraRestClientFacto
 import com.smartbear.ready.plugin.jira.factories.JiraPrefsFactory;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerPrefs;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerSettings;
-import org.apache.log4j.Appender;
-import org.apache.log4j.FileAppender;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +54,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -522,20 +523,11 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return new AttachmentAddingResult();
     }
 
-    private InputStream getExecutionLog(String loggerName) {
-        org.apache.log4j.Logger loggerr = org.apache.log4j.Logger.getLogger(loggerName);
-        FileAppender fileAppender = null;
-        Enumeration appenders = loggerr.getRootLogger().getAllAppenders();
-        while (appenders.hasMoreElements()) {
-            Appender currentAppender = (Appender) appenders.nextElement();
-            if (currentAppender instanceof FileAppender) {
-                fileAppender = (FileAppender) currentAppender;
-            }
-        }
-
-        if (fileAppender != null) {
+    private InputStream getExecutionLog() {
+        Appender appender = ((LoggerContext) LogManager.getContext(false)).getConfiguration().getAppender("FILE");
+        if (appender instanceof RollingFileAppender) {
             try {
-                return new FileInputStream(fileAppender.getFile());
+                return new FileInputStream(((RollingFileAppender) appender).getFileName());
             } catch (FileNotFoundException e) {
                 JiraProvider.logger.error(e.getMessage());
             }
@@ -544,16 +536,18 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return null;
     }
 
+    //TODO: Specify an appenderName for getExecutionLog()
     public InputStream getServiceVExecutionLog() {
-        return getExecutionLog("com.smartbear.servicev");
+        return getExecutionLog();
     }
 
+    //TODO: Specify an appenderName for getExecutionLog()
     public InputStream getLoadUIExecutionLog() {
-        return getExecutionLog("com.eviware.loadui");
+        return getExecutionLog();
     }
 
     public InputStream getReadyApiLog() {
-        return getExecutionLog("com.smartbear.ready");
+        return getExecutionLog();
     }
 
     public void setActiveItem(ModelItem element) {
