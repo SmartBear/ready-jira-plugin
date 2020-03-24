@@ -1,7 +1,5 @@
 package com.smartbear.ready.plugin.jira.settings;
 
-import com.sun.istack.internal.NotNull;
-
 /**
  * Created by avdeev on 19.03.2015.
  */
@@ -11,7 +9,7 @@ public class BugTrackerSettings {
     private String password;
     private boolean skipReleasedVersions;
 
-    public BugTrackerSettings(@NotNull String url, @NotNull String login, @NotNull String password, boolean skipReleasedVersions){
+    public BugTrackerSettings(String url, String login, String password, boolean skipReleasedVersions){
         this.url = url;
         this.login = login;
         this.password = password;
