@@ -34,7 +34,6 @@ import javax.swing.border.Border;
 import javax.swing.filechooser.FileFilter;
 import java.awt.Dimension;
 import java.io.File;
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -220,11 +219,6 @@ public class SwingXScrollableFormImpl implements XForm {
         if (type == FieldType.FOLDER || type == FieldType.FILE || type == FieldType.PROJECT_FOLDER
                 || type == FieldType.PROJECT_FILE || type == FieldType.FILE_OR_FOLDER) {
             return (XFormTextField) addComponent(name, new FileFormField(description, type, name));
-        } else if (type == FieldType.DEFINITION_FILE) {
-            FileFormField fForm = new FileFormField(description, type, name);
-            //fForm.addChoosableFileFilters(getDefinitionManagerFilters());
-            throw new InvalidParameterException();
-            //return (XFormTextField) addComponent(name, fForm);
         } else if (type == FieldType.PASSWORD) {
             JPasswordFieldFormField pwdField = new JPasswordFieldFormField(FieldType.PASSWORD.toString());
             pwdField.getComponent().setColumns(30);
