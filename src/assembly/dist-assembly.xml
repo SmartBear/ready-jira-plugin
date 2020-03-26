@@ -64,6 +64,23 @@
                 <exclude>*:*jtidy*</exclude>
                 <exclude>*:*jug*</exclude>
                 <exclude>*:*l2fprod*</exclude>
+                <exclude>*:*xmlbeans*</exclude>
+                <exclude>*:*jgit*</exclude>
+                <exclude>*:*httpclient*</exclude>
+                <exclude>*:*jxl*</exclude>
+                <exclude>*:*tika*</exclude>
+                <exclude>*:*mina*</exclude>
+                <exclude>*:*readyapi*</exclude>
+                <exclude>*:*jide*</exclude>
+                <exclude>*:*snmp4j*</exclude>
+                <exclude>*:*woodstox*</exclude>
+                <exclude>*:*japura*</exclude>
+                <exclude>*:*liquibase*</exclude>
+                <exclude>*:*mongo*</exclude>
+                <exclude>*:*mockito*</exclude>
+                <exclude>*:*graphql*</exclude>
+                <exclude>*:*pcap4j*</exclude>
+                <exclude>*:*flying-saucer*</exclude>
                 <exclude>*:*languagesupport*</exclude>
                 <exclude>*:*license4j*</exclude>
                 <exclude>*:*looks*</exclude>
@@ -115,6 +132,7 @@
                 <exclude>*:*forms*</exclude>
                 <exclude>*:*jaxrpc*</exclude>
                 <exclude>*:*jcifs*</exclude>
+                <exclude>*:*javafx*</exclude>
                 <exclude>*:*jna*</exclude>
                 <exclude>*:*reports*</exclude>
                 <exclude>*:*swingx*</exclude>

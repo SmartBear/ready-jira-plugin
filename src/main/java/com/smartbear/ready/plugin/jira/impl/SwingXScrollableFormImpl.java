@@ -1,6 +1,6 @@
 package com.smartbear.ready.plugin.jira.impl;
 
-import com.eviware.soapui.impl.rest.refactoring.definition.manager.AbstractDefinitionManager;
+import com.eviware.soapui.impl.rest.DefinitionSource;
 import com.eviware.soapui.impl.wsdl.WsdlInterface;
 import com.eviware.soapui.impl.wsdl.actions.iface.tools.support.NamespaceTable;
 import com.eviware.soapui.model.iface.Interface;
@@ -33,7 +33,6 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.Border;
 import javax.swing.filechooser.FileFilter;
 import java.awt.Dimension;
-import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -191,6 +190,11 @@ public class SwingXScrollableFormImpl implements XForm {
         return comboBox;
     }
 
+    @Override
+    public XFormOptionsField addComboBox(String s, Object[] objects, String s1, boolean b) {
+        return null;
+    }
+
     public void addSeparator() {
         addSeparator(null);
     }
@@ -215,12 +219,8 @@ public class SwingXScrollableFormImpl implements XForm {
         if (type == FieldType.FOLDER || type == FieldType.FILE || type == FieldType.PROJECT_FOLDER
                 || type == FieldType.PROJECT_FILE || type == FieldType.FILE_OR_FOLDER) {
             return (XFormTextField) addComponent(name, new FileFormField(description, type, name));
-        } else if (type == FieldType.DEFINITION_FILE) {
-            FileFormField fForm = new FileFormField(description, type, name);
-            fForm.addChoosableFileFilters(getDefinitionManagerFilters());
-            return (XFormTextField) addComponent(name, fForm);
         } else if (type == FieldType.PASSWORD) {
-            JPasswordFieldFormField pwdField = new JPasswordFieldFormField();
+            JPasswordFieldFormField pwdField = new JPasswordFieldFormField(FieldType.PASSWORD.toString());
             pwdField.getComponent().setColumns(30);
             pwdField.setToolTip(description);
             addComponent(name, pwdField);
@@ -342,7 +342,7 @@ public class SwingXScrollableFormImpl implements XForm {
         fl.add(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                if(f.isDirectory() || f.getName().toLowerCase().endsWith(AbstractDefinitionManager.Source.RAML.get()) ) {
+                if(f.isDirectory() || f.getName().toLowerCase().endsWith(DefinitionSource.RAML.get()) ) {
                     return true;
                 }
                 return false;
@@ -356,7 +356,7 @@ public class SwingXScrollableFormImpl implements XForm {
         fl.add(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                if(f.isDirectory() || f.getName().toLowerCase().endsWith(AbstractDefinitionManager.Source.SWAGGER.get()) ) {
+                if(f.isDirectory() || f.getName().toLowerCase().endsWith(DefinitionSource.SWAGGER.get()) ) {
                     return true;
                 }
                 return false;
@@ -370,7 +370,7 @@ public class SwingXScrollableFormImpl implements XForm {
         fl.add(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                if(f.isDirectory() || f.getName().toLowerCase().endsWith(AbstractDefinitionManager.Source.XML.get()) ) {
+                if(f.isDirectory() || f.getName().toLowerCase().endsWith(DefinitionSource.XML.get()) ) {
                     return true;
                 }
                 return false;
@@ -384,7 +384,7 @@ public class SwingXScrollableFormImpl implements XForm {
         fl.add(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                if(f.isDirectory() || f.getName().toLowerCase().endsWith(AbstractDefinitionManager.Source.WADL.get()) ) {
+                if(f.isDirectory() || f.getName().toLowerCase().endsWith(DefinitionSource.WADL.get()) ) {
                     return true;
                 }
                 return false;
