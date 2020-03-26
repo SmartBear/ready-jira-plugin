@@ -72,6 +72,14 @@
             <version>3.1.0</version>
             <exclusions>
                 <exclusion>
+                    <groupId>org.eclipse.jgit</groupId>
+                    <artifactId>org.eclipse.jgit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.sf.jasperreports</groupId>
+                    <artifactId>jasperreports</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
                 </exclusion>
@@ -94,6 +102,70 @@
             <artifactId>ready-api-soapui-ng</artifactId>
             <version>3.1.0</version>
             <exclusions>
+                <exclusion>
+                    <artifactId>com.smartbear</artifactId>
+                    <groupId>loadui-utils</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.amazonaws</groupId>
+                    <artifactId>aws-java-sdk-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.amazonaws</groupId>
+                    <artifactId>aws-java-sdk-ec2</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.sf.jasperreports</groupId>
+                    <artifactId>jasperreports</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-base</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-web</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-controls</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-graphics</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-media</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-swing</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.teamdev.jxbrowser</groupId>
+                    <artifactId>jxbrowser-win32</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.teamdev.jxbrowser</groupId>
+                    <artifactId>jxbrowser-win64</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.teamdev.jxbrowser</groupId>
+                    <artifactId>jxbrowser-mac</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.teamdev.jxbrowser</groupId>
+                    <artifactId>jxbrowser-linux64</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.teamdev.jxbrowser</groupId>
+                    <artifactId>jxbrowser</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.teamdev.jxbrowser</groupId>
+                    <artifactId>jxbrowser-swing</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
@@ -120,6 +192,12 @@
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-rest-java-client-api</artifactId>
             <version>5.2.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
