@@ -434,9 +434,17 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     customOptionValue.put(NAME_FIELD_NAME, extraRequiredValue.getValue());
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
                 } else if (extraRequiredValue.getKey().equals(IssueFieldId.REPORTER_FIELD.id)) {
-                    String username = getUserName(extraRequiredValue.getValue());
-                    issueInputBuilder.setFieldInput(new FieldInput(IssueFieldId.REPORTER_FIELD,
-                            ComplexIssueInputFieldValue.with("name", username)));
+                    String key = IssueFieldId.REPORTER_FIELD.id;
+                    ComplexIssueInputFieldValue value = null;
+                    User user = getUser(extraRequiredValue.getValue());
+                    String username = user.getName();
+                    if (username != null) {
+                        value = ComplexIssueInputFieldValue.with("name", username);
+                    } else {
+                        String accountId = user.getAccountId();
+                        value = ComplexIssueInputFieldValue.with("accountId", accountId);
+                    }
+                    issueInputBuilder.setFieldInput(new FieldInput(key, value));
                 } else if (isFieldWithPredefinedValues(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
                     Map<String, Object> customOptionValue = new HashMap<>();
                     customOptionValue.put(VALUE_FIELD_NAME, extraRequiredValue.getValue());
@@ -468,12 +476,17 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         return new IssueCreationResult(basicIssue);
     }
 
-    private String getUserName(String username) throws Exception {
+    private User getUser(String username) throws Exception {
         AsynchronousUserSearchRestClient userSearchRestClient = ((AsynchronousJiraRestClientEx) restClient).getUserSearchRestClient();
         User user = userSearchRestClient.getUser(username).get();
         if (user == null) {
             throw new Exception(String.format(USER_NAME_NOT_FOUND, username));
         }
+        return user;
+    }
+
+    private String getUserName(String username) throws Exception {
+        User user = getUser(username);
         return user.getName();
     }
 
