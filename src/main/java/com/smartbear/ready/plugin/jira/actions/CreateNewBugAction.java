@@ -55,7 +55,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     public static final String READING_JIRA_SETTINGS_FOR_SELECTED_PROJECT_AND_ISSUE_TYPE = "Reading JIRA settings for the selected project and item type";
     public static final String READING_JIRA_SETTINGS = "Reading information from JIRA";
     public static final String TOOLBAR_ACTION_DESCRIPTION = "Create a new JIRA item";
-    public static final String PATH_TO_TOOLBAR_ICON = "com/smartbear/ready/plugin/jira/icons/Bug-tracker-icon_20-20-px.png";
+    public static final String PATH_TO_TOOLBAR_ICON = "com/smartbear/ready/plugin/jira/icons/jira.png";
     public static final String EMPTY_VALUE_FOR_OPTIONS_FIELD = "";
     private static String NEW_ISSUE_DIALOG_CAPTION = "Create a new ";
 
