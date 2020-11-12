@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 20 20">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.919" y1="0.402" x2="0.285" y2="0.816" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#8e99ab"/>
+      <stop offset="0.18" stop-color="#8e99ab"/>
+      <stop offset="1" stop-color="#b6becb"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="0.087" y1="0.592" x2="0.723" y2="0.18" xlink:href="#linear-gradient"/>
+    <clipPath id="clip-jira_disabled">
+      <rect width="20" height="20"/>
+    </clipPath>
+  </defs>
+  <g id="jira_disabled" clip-path="url(#clip-jira_disabled)">
+    <g id="atlassian_jira-icon" transform="translate(-229.57 -169.264)">
+      <path id="Path_3489" data-name="Path 3489" d="M248.991,178.7l-9.445-9.44L230.1,178.7a.793.793,0,0,0,0,1.119l9.445,9.44,4.613-4.611,4.832-4.83A.793.793,0,0,0,248.991,178.7Zm-9.445,3.515-2.958-2.957,2.958-2.957,2.958,2.957Z" transform="translate(0 0)" fill="#b6becb"/>
+      <path id="Path_3490" data-name="Path 3490" d="M246.5,176.424a4.98,4.98,0,0,1-.022-7.022l-6.493,6.452,3.523,3.523Z" transform="translate(-6.952 -0.095)" fill="url(#linear-gradient)"/>
+      <path id="Path_3491" data-name="Path 3491" d="M263.786,201.237,260.82,204.2a4.98,4.98,0,0,1,0,7.046l6.487-6.487Z" transform="translate(-21.274 -21.986)" fill="url(#linear-gradient-2)"/>
+    </g>
+  </g>
+</svg>
