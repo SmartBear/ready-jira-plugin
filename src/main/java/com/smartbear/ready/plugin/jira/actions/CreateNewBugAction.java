@@ -59,6 +59,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     public static final String EMPTY_VALUE_FOR_OPTIONS_FIELD = "";
     private static String NEW_ISSUE_DIALOG_CAPTION = "Create a new ";
     private static final String MULTISELECT_CUSTOM_FIELD_TYPE = "com.atlassian.jira.plugin.system.customfieldtypes:multiselect";
+    private static final String MULTICHECKBOXES_CUSTOM_FIELD_TYPE = "com.atlassian.jira.plugin.system.customfieldtypes:multicheckboxes";
 
     protected String selectedProject, selectedIssueType;
 
@@ -244,7 +245,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 continue;
             }
 
-            if (isMultiselectCustomField(entry.getValue())) {
+            if (isSpecifiedTypeCustomField(entry.getValue(), MULTISELECT_CUSTOM_FIELD_TYPE) ||
+                    isSpecifiedTypeCustomField(entry.getValue(), MULTICHECKBOXES_CUSTOM_FIELD_TYPE)) {
                 XFormField formField = issueDetails.getFormField(entry.getValue().getName());
                 String[] selectedOptions = StringUtils.toStringArray(((XFormMultiSelectList) formField).getSelectedOptions());
                 extraValues.put(key, selectedOptions);
@@ -350,11 +352,12 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             CimFieldInfo fieldInfo = field.getValue();
             XFormField newField;
             if (fieldInfo.getAllowedValues() != null) {
-                boolean isMultiselectCustomField = isMultiselectCustomField(fieldInfo);
-                boolean addEmptyValue = isMultiselectCustomField ? false : !fieldInfo.isRequired();
+                boolean isMultiValueCustomField = isSpecifiedTypeCustomField(fieldInfo, MULTICHECKBOXES_CUSTOM_FIELD_TYPE) ||
+                        isSpecifiedTypeCustomField(fieldInfo, MULTISELECT_CUSTOM_FIELD_TYPE);
+                boolean addEmptyValue = isMultiValueCustomField ? false : !fieldInfo.isRequired();
                 String[] values = IterableObjectsToNameArray(bugTrackerProvider, fieldInfo.getAllowedValues(), addEmptyValue);
                 if (values.length > 0) {
-                    if (isMultiselectCustomField) {
+                    if (isMultiValueCustomField) {
                         newField = baseDialog.addComponent(fieldInfo.getName(), new XFormMultiSelectList(values));
                     } else {
                         newField = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
@@ -374,13 +377,13 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    private boolean isMultiselectCustomField(CimFieldInfo fieldInfo) {
+    private boolean isSpecifiedTypeCustomField(CimFieldInfo fieldInfo, String type) {
         String custom = fieldInfo.getSchema().getCustom();
         if (custom == null) {
             return false;
         }
 
-        return custom.equals(MULTISELECT_CUSTOM_FIELD_TYPE);
+        return custom.equals(type);
     }
 
     private void makeComboBoxFieldEditable(XFormField field) {
