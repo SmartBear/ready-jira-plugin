@@ -423,7 +423,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                         }
                     });
                 } else if (extraRequiredValue.getKey().equals(ASSIGNEE_FIELD_NAME)) {
-                    issueInputBuilder.setAssigneeName(extraRequiredValue.getValue());
+                    issueInputBuilder.setFieldInput(getUserFieldInput(IssueFieldId.ASSIGNEE_FIELD.id, extraRequiredValue.getValue()));
                 } else if (extraRequiredValue.getKey().equals(PARENT_FIELD_NAME)) {
                     Map<String, Object> parent = new HashMap<String, Object>();
                     parent.put("key", extraRequiredValue.getValue());
@@ -434,17 +434,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     customOptionValue.put(NAME_FIELD_NAME, extraRequiredValue.getValue());
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
                 } else if (extraRequiredValue.getKey().equals(IssueFieldId.REPORTER_FIELD.id)) {
-                    String key = IssueFieldId.REPORTER_FIELD.id;
-                    ComplexIssueInputFieldValue value = null;
-                    User user = getUser(extraRequiredValue.getValue());
-                    String username = user.getName();
-                    if (username != null) {
-                        value = ComplexIssueInputFieldValue.with("name", username);
-                    } else {
-                        String accountId = user.getAccountId();
-                        value = ComplexIssueInputFieldValue.with("accountId", accountId);
-                    }
-                    issueInputBuilder.setFieldInput(new FieldInput(key, value));
+                    issueInputBuilder.setFieldInput(getUserFieldInput(IssueFieldId.REPORTER_FIELD.id, extraRequiredValue.getValue()));
                 } else if (isFieldWithPredefinedValues(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
                     Map<String, Object> customOptionValue = new HashMap<>();
                     customOptionValue.put(VALUE_FIELD_NAME, extraRequiredValue.getValue());
@@ -474,6 +464,19 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         }
 
         return new IssueCreationResult(basicIssue);
+    }
+
+    private FieldInput getUserFieldInput(String key, String value) throws Exception {
+        ComplexIssueInputFieldValue complexIssueInputFieldValue;
+        User user = getUser(value);
+        String username = user.getName();
+        if (username != null) {
+            complexIssueInputFieldValue = ComplexIssueInputFieldValue.with("name", username);
+        } else {
+            String accountId = user.getAccountId();
+            complexIssueInputFieldValue = ComplexIssueInputFieldValue.with("accountId", accountId);
+        }
+        return new FieldInput(key, complexIssueInputFieldValue);
     }
 
     private User getUser(String username) throws Exception {
