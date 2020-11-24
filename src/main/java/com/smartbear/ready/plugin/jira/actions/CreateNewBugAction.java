@@ -6,7 +6,6 @@ import com.atlassian.jira.rest.client.api.domain.CustomFieldOption;
 import com.atlassian.jira.rest.client.api.domain.Version;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.model.ModelItem;
-import com.eviware.soapui.model.support.ModelSupport;
 import com.eviware.soapui.model.testsuite.TestCase;
 import com.eviware.soapui.model.testsuite.TestStep;
 import com.eviware.soapui.model.testsuite.TestSuite;
@@ -26,6 +25,7 @@ import com.eviware.x.form.XFormFactory;
 import com.eviware.x.form.XFormField;
 import com.eviware.x.form.XFormFieldListener;
 import com.eviware.x.form.XFormOptionsField;
+import com.eviware.x.form.support.XFormMultiSelectList;
 import com.google.inject.Inject;
 import com.smartbear.ready.plugin.jira.dialog.BugInfoDialogConsts;
 import com.smartbear.ready.plugin.jira.impl.AttachmentAddingResult;
@@ -58,6 +58,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     public static final String PATH_TO_TOOLBAR_ICON = "com/smartbear/ready/plugin/jira/icons/jira.svg";
     public static final String EMPTY_VALUE_FOR_OPTIONS_FIELD = "";
     private static String NEW_ISSUE_DIALOG_CAPTION = "Create a new ";
+    private static final String MULTISELECT_CUSTOM_FIELD_TYPE = "com.atlassian.jira.plugin.system.customfieldtypes:multiselect";
+    private static final String MULTICHECKBOXES_CUSTOM_FIELD_TYPE = "com.atlassian.jira.plugin.system.customfieldtypes:multicheckboxes";
 
     protected String selectedProject, selectedIssueType;
 
@@ -123,11 +125,11 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         final String issueType;
         final String summary;
         final String description;
-        final Map<String, String> extraValues;
+        final Map<String, Object> extraValues;
         IssueCreationResult result;
 
         public JiraIssueCreatorWorker(JiraProvider bugTrackerProvider, String projectKey, String issueType,
-                                      String summary, String description, Map<String, String> extraValues) {
+                                      String summary, String description, Map<String, Object> extraValues) {
             this.bugTrackerProvider = bugTrackerProvider;
             this.projectKey = projectKey;
             this.issueType = issueType;
@@ -232,7 +234,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         String description = values.get(BugInfoDialogConsts.ISSUE_DESCRIPTION, null);
         String projectKey = selectedProject;
         String issueType = selectedIssueType;
-        Map<String, String> extraValues = new HashMap<String, String>();
+        Map<String, Object> extraValues = new HashMap<>();
         for (Map.Entry<String, CimFieldInfo> entry :
                 bugTrackerProvider.getProjectFields(projectKey).get(projectKey).get(issueType).entrySet()) {
             String key = entry.getKey();
@@ -242,8 +244,17 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                     !key.equals(JiraProvider.PRIORITY_FIELD_NAME)) {
                 continue;
             }
+
+            if (isSpecifiedTypeCustomField(entry.getValue(), MULTISELECT_CUSTOM_FIELD_TYPE) ||
+                    isSpecifiedTypeCustomField(entry.getValue(), MULTICHECKBOXES_CUSTOM_FIELD_TYPE)) {
+                XFormField formField = issueDetails.getFormField(entry.getValue().getName());
+                String[] selectedOptions = StringUtils.toStringArray(((XFormMultiSelectList) formField).getSelectedOptions());
+                extraValues.put(key, selectedOptions);
+                continue;
+            }
+
             if (!StringUtils.isNullOrEmpty(values.get(entry.getValue().getName()))) {
-                extraValues.put(entry.getKey(), values.get(entry.getValue().getName()));
+                extraValues.put(key, values.get(entry.getValue().getName()));
             }
         }
         XProgressDialog issueCreationProgressDialog = UISupport.getDialogs().createProgressDialog(
@@ -284,8 +295,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         }
     }
 
-    public static Object[] IterableObjectsToNameArray(JiraProvider bugTrackerProvider, Iterable<Object> input, boolean addEmptyValue) {
-        ArrayList<Object> objects = new ArrayList<>();
+    public static String[] IterableObjectsToNameArray(JiraProvider bugTrackerProvider, Iterable<Object> input, boolean addEmptyValue) {
+        ArrayList<String> objects = new ArrayList<>();
         if (addEmptyValue) {
             objects.add(EMPTY_VALUE_FOR_OPTIONS_FIELD);
         }
@@ -300,7 +311,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 }
             }
         }
-        return objects.toArray();
+        return objects.toArray(new String[objects.size()]);
     }
 
     public static Object[] FixVersionsToNameArray(JiraProvider bugTrackerProvider, Iterable<Object> input,
@@ -341,10 +352,17 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             CimFieldInfo fieldInfo = field.getValue();
             XFormField newField;
             if (fieldInfo.getAllowedValues() != null) {
-                Object[] values = IterableObjectsToNameArray(bugTrackerProvider, fieldInfo.getAllowedValues(), !fieldInfo.isRequired());
+                boolean isMultiValueCustomField = isSpecifiedTypeCustomField(fieldInfo, MULTICHECKBOXES_CUSTOM_FIELD_TYPE) ||
+                        isSpecifiedTypeCustomField(fieldInfo, MULTISELECT_CUSTOM_FIELD_TYPE);
+                boolean addEmptyValue = isMultiValueCustomField ? false : !fieldInfo.isRequired();
+                String[] values = IterableObjectsToNameArray(bugTrackerProvider, fieldInfo.getAllowedValues(), addEmptyValue);
                 if (values.length > 0) {
-                    newField = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
-                    makeComboBoxFieldEditable(newField);
+                    if (isMultiValueCustomField) {
+                        newField = baseDialog.addComponent(fieldInfo.getName(), new XFormMultiSelectList(values));
+                    } else {
+                        newField = baseDialog.addComboBox(fieldInfo.getName(), values, fieldInfo.getName());
+                        makeComboBoxFieldEditable(newField);
+                    }
                 } else {
                     newField = baseDialog.addTextField(fieldInfo.getName(), fieldInfo.getName(), XForm.FieldType.TEXT);
                 }
@@ -357,6 +375,15 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 newField.setRequired(true, fieldInfo.getName());
             }
         }
+    }
+
+    private boolean isSpecifiedTypeCustomField(CimFieldInfo fieldInfo, String type) {
+        String custom = fieldInfo.getSchema().getCustom();
+        if (custom == null) {
+            return false;
+        }
+
+        return custom.equals(type);
     }
 
     private void makeComboBoxFieldEditable(XFormField field) {
@@ -414,7 +441,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             if (affectedVersionFieldInfo != null) {
                 XFormField affectedVersionField = null;
                 if (affectedVersionFieldInfo.getAllowedValues() != null) {
-                    Object[] values = IterableObjectsToNameArray(bugTrackerProvider,
+                    String[] values = IterableObjectsToNameArray(bugTrackerProvider,
                             affectedVersionFieldInfo.getAllowedValues(), !affectedVersionFieldInfo.isRequired());
                     if (values.length > 0) {
                         affectedVersionField = form.addComboBox(affectedVersionFieldInfo.getName(), values,

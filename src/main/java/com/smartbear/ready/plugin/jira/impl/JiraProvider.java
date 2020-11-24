@@ -326,7 +326,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     }
 
     @Override
-    public IssueCreationResult createIssue(String projectKey, String issueTypeKey, String summary, String description, Map<String, String> extraRequiredValues) {
+    public IssueCreationResult createIssue(String projectKey, String issueTypeKey, String summary, String description, Map<String, Object> extraRequiredValues) {
         //https://bitbucket.org/atlassian/jira-rest-java-client/src/75a64c9d81aad7d8bd9beb11e098148407b13cae/test/src/test/java/samples/Example1.java?at=master
         if (restClient == null) {
             return new IssueCreationResult(BUG_TRACKER_URI_IS_INCORRECT);
@@ -344,9 +344,9 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             issueInputBuilder.setProjectKey(projectKey);
             issueInputBuilder.setSummary(summary);
             issueInputBuilder.setDescription(description);
-            for (final Map.Entry<String, String> extraRequiredValue : extraRequiredValues.entrySet()) {
+            for (final Map.Entry<String, Object> extraRequiredValue : extraRequiredValues.entrySet()) {
                 if (extraRequiredValue.getKey().equals(PRIORITY_FIELD_NAME)) {
-                    issueInputBuilder.setPriority(getPriorityByName(extraRequiredValue.getValue()));
+                    issueInputBuilder.setPriority(getPriorityByName((String) extraRequiredValue.getValue()));
                 } else if (extraRequiredValue.getKey().equals(COMPONENTS_FIELD_NAME)) {
                     issueInputBuilder.setComponentsNames(new Iterable<String>() {
                         @Override
@@ -362,7 +362,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                                 @Override
                                 public String next() {
                                     hasValue = false;
-                                    return extraRequiredValue.getValue();
+                                    return (String) extraRequiredValue.getValue();
                                 }
 
                                 @Override
@@ -387,7 +387,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                                 @Override
                                 public String next() {
                                     hasValue = false;
-                                    return extraRequiredValue.getValue();
+                                    return (String) extraRequiredValue.getValue();
                                 }
 
                                 @Override
@@ -412,7 +412,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                                 @Override
                                 public String next() {
                                     hasValue = false;
-                                    return extraRequiredValue.getValue();
+                                    return (String) extraRequiredValue.getValue();
                                 }
 
                                 @Override
@@ -423,7 +423,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                         }
                     });
                 } else if (extraRequiredValue.getKey().equals(ASSIGNEE_FIELD_NAME)) {
-                    issueInputBuilder.setFieldInput(getUserFieldInput(IssueFieldId.ASSIGNEE_FIELD.id, extraRequiredValue.getValue()));
+                    issueInputBuilder.setFieldInput(getUserFieldInput(IssueFieldId.ASSIGNEE_FIELD.id, (String) extraRequiredValue.getValue()));
                 } else if (extraRequiredValue.getKey().equals(PARENT_FIELD_NAME)) {
                     Map<String, Object> parent = new HashMap<String, Object>();
                     parent.put("key", extraRequiredValue.getValue());
@@ -434,13 +434,18 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     customOptionValue.put(NAME_FIELD_NAME, extraRequiredValue.getValue());
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
                 } else if (extraRequiredValue.getKey().equals(IssueFieldId.REPORTER_FIELD.id)) {
-                    issueInputBuilder.setFieldInput(getUserFieldInput(IssueFieldId.REPORTER_FIELD.id, extraRequiredValue.getValue()));
+                    issueInputBuilder.setFieldInput(getUserFieldInput(IssueFieldId.REPORTER_FIELD.id, (String) extraRequiredValue.getValue()));
                 } else if (isFieldWithPredefinedValues(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
-                    Map<String, Object> customOptionValue = new HashMap<>();
-                    customOptionValue.put(VALUE_FIELD_NAME, extraRequiredValue.getValue());
-                    issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), new ComplexIssueInputFieldValue(customOptionValue));
+                    List<ComplexIssueInputFieldValue> fieldValueList = new ArrayList<>();
+                    String[] values = (String[]) extraRequiredValue.getValue();
+                    for (String value : values) {
+                        Map<String, Object> valueMap = new HashMap<>();
+                        valueMap.put(VALUE_FIELD_NAME, value);
+                        fieldValueList.add(new ComplexIssueInputFieldValue(valueMap));
+                    }
+                    issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), fieldValueList);
                 } else if (isArrayValue(projectKey, issueTypeKey, extraRequiredValue.getKey())) {
-                    issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), Arrays.asList(extraRequiredValue.getValue().split("\\s*,\\s*")));
+                    issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), Arrays.asList(((String) extraRequiredValue.getValue()).split("\\s*,\\s*")));
                 } else {
                     issueInputBuilder.setFieldValue(extraRequiredValue.getKey(), extraRequiredValue.getValue());
                 }
