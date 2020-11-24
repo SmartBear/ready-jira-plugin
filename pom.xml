@@ -11,7 +11,7 @@
     <repositories>
         <repository>
             <id>atlassian-public</id>
-            <url>https://m2proxy.atlassian.com/repository/public</url>
+            <url>https://packages.atlassian.com/mvn/maven-atlassian-external/</url>
         </repository>
         <repository>
             <id>SoapUI_M2</id>
