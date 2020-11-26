@@ -98,7 +98,7 @@ public class JiraPrefsFactory implements Prefs {
         if (form == null) {
             form = new SimpleForm();
             form.addSpace();
-            JTextField loginField = form.appendTextField(BUG_TRACKER_LOGIN, BUG_TRACKER_LOGIN_DESCRIPTION);
+            JTextField loginField = form.appendTextField(BUG_TRACKER_LOGIN_CAPTION, BUG_TRACKER_LOGIN_DESCRIPTION);
             loginField.getDocument().addDocumentListener(new BugTrackerSettingsChangeListener());
             loginField.addFocusListener(new BugTrackerLoginFieldFocusListener());
             JPasswordField passwordField = form.appendPasswordField(BUG_TRACKER_PASSWORD, BUG_TRACKER_PASSWORD_DESCRIPTION);
