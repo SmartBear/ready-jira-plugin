@@ -47,8 +47,8 @@ import java.util.Map;
 public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     public static final String TOOLBAR_BUTTON_CAPTION = "JIRA";
     public static final String SPECIFIES_THE_REQUIRED_FIELDS_TO_CREATE_NEW_ISSUE_IN_JIRA = "Populate the required fields to create a new JIRA issue";
-    public static final String WORKSPACE_ITEM_SELECTED = "Unable to create a  JIRA item.\nSelect a project, test case or test suite in the Navigator.";
-    public static final String NO_AVAILABLE_JIRA_PROJECTS = "Unable to retrieve information from JIRA.\nPossible causes:\n  - The JIRA Integration plugin settings are invalid.\n You might have specified email instead of username.\n  - You do not have enough permissions in JIRA.";
+    public static final String WORKSPACE_ITEM_SELECTED = "Unable to create a  JIRA item." + StringUtils.NEWLINE + "Select a project, test case or test suite in the Navigator.";
+    public static final String NO_AVAILABLE_JIRA_PROJECTS = "Unable to retrieve information from JIRA." + StringUtils.NEWLINE + "Possible causes:" + StringUtils.NEWLINE + "  - The JIRA Integration plugin settings are invalid." + StringUtils.NEWLINE + " You might have specified email instead of username." + StringUtils.NEWLINE + "  - You do not have enough permissions in JIRA.";
     public static final String NEW_ISSUE_DETAILS_FORM_NAME = "Creating a new JIRA item";
     public static final String PLEASE_WAIT = "Please wait";
     public static final String ADDING_ATTACHMENTS = "Adding attachments";
