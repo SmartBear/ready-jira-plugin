@@ -19,6 +19,7 @@ import java.awt.event.FocusListener;
 @PluginPrefs
 public class JiraPrefsFactory implements Prefs {
     public static final String BUG_TRACKER_LOGIN = "Username:";
+    public static final String BUG_TRACKER_LOGIN_CAPTION = "Email or username:";
     public static final String BUG_TRACKER_PASSWORD = "API Token or Password:";
     public static final String BUG_TRACKER_LOGIN_DESCRIPTION = "Your JIRA user account";
     public static final String BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION = "Your JIRA user account";
