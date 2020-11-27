@@ -5,7 +5,7 @@ import com.eviware.soapui.plugins.PluginAdapter;
 import com.eviware.soapui.plugins.PluginConfiguration;
 
 @PluginConfiguration(groupId = "com.smartbear.ready.plugins",
-        name = "JIRA Integration Plugin", version = "1.5",
+        name = "JIRA Integration Plugin", version = "1.6.1-SNAPSHOT",
         autoDetect = true, description = "Creates JIRA items for failed tests directly from the ReadyAPI IDE.",
         infoUrl = "https://github.com/smartbear/ready-api-plugin-jira",
         minimumReadyApiVersion = "3.5.0")
