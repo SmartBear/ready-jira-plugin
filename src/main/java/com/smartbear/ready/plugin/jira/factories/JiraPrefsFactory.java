@@ -19,7 +19,7 @@ import java.awt.event.FocusListener;
 @PluginPrefs
 public class JiraPrefsFactory implements Prefs {
     public static final String BUG_TRACKER_LOGIN = "Username:";
-    public static final String BUG_TRACKER_LOGIN_CAPTION = "Email or username:";
+    public static final String BUG_TRACKER_LOGIN_LABEL = "Email or username:";
     public static final String BUG_TRACKER_PASSWORD = "API Token or Password:";
     public static final String BUG_TRACKER_LOGIN_DESCRIPTION = "Your JIRA user account";
     public static final String BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION = "Your JIRA user account";
@@ -98,7 +98,7 @@ public class JiraPrefsFactory implements Prefs {
         if (form == null) {
             form = new SimpleForm();
             form.addSpace();
-            JTextField loginField = form.appendTextField(BUG_TRACKER_LOGIN_CAPTION, BUG_TRACKER_LOGIN_DESCRIPTION);
+            JTextField loginField = form.appendTextField(BUG_TRACKER_LOGIN_LABEL, BUG_TRACKER_LOGIN, BUG_TRACKER_LOGIN_DESCRIPTION, 30 /*for SimpleForm this is default value, but unfortunately this is no exposed via methods*/);
             loginField.getDocument().addDocumentListener(new BugTrackerSettingsChangeListener());
             loginField.addFocusListener(new BugTrackerLoginFieldFocusListener());
             JPasswordField passwordField = form.appendPasswordField(BUG_TRACKER_PASSWORD, BUG_TRACKER_PASSWORD_DESCRIPTION);
