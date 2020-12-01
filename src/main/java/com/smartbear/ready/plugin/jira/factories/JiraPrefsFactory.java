@@ -18,7 +18,6 @@ import java.awt.event.FocusListener;
 
 @PluginPrefs
 public class JiraPrefsFactory implements Prefs {
-    public static final String BUG_TRACKER_LOGIN = "Username:";
     public static final String BUG_TRACKER_LOGIN_LABEL = "Email or username:";
     public static final String BUG_TRACKER_PASSWORD = "API Token or Password:";
     public static final String BUG_TRACKER_LOGIN_DESCRIPTION = "Your JIRA user account";
@@ -98,7 +97,7 @@ public class JiraPrefsFactory implements Prefs {
         if (form == null) {
             form = new SimpleForm();
             form.addSpace();
-            JTextField loginField = form.appendTextField(BUG_TRACKER_LOGIN_LABEL, BUG_TRACKER_LOGIN, BUG_TRACKER_LOGIN_DESCRIPTION, 30 /*for SimpleForm this is default value, but unfortunately this is no exposed via methods*/);
+            JTextField loginField = form.appendTextField(BUG_TRACKER_LOGIN_LABEL, BUG_TRACKER_LOGIN_DESCRIPTION);
             loginField.getDocument().addDocumentListener(new BugTrackerSettingsChangeListener());
             loginField.addFocusListener(new BugTrackerLoginFieldFocusListener());
             JPasswordField passwordField = form.appendPasswordField(BUG_TRACKER_PASSWORD, BUG_TRACKER_PASSWORD_DESCRIPTION);
@@ -126,8 +125,8 @@ public class JiraPrefsFactory implements Prefs {
 
     @Override
     public void storeValues(StringToStringMap values, Settings settings) {
-        if (values.get(BUG_TRACKER_LOGIN) != null && !values.get(BUG_TRACKER_LOGIN).equals(BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION)) {
-            settings.setString(BugTrackerPrefs.LOGIN, values.get(BUG_TRACKER_LOGIN));
+        if (values.get(BUG_TRACKER_LOGIN_LABEL) != null && !values.get(BUG_TRACKER_LOGIN_LABEL).equals(BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION)) {
+            settings.setString(BugTrackerPrefs.LOGIN, values.get(BUG_TRACKER_LOGIN_LABEL));
         }
         settings.setString(BugTrackerPrefs.PASSWORD, values.get(BUG_TRACKER_PASSWORD));
         if (values.get(BUG_TRACKER_URL) != null && !values.get(BUG_TRACKER_URL).equals(BUG_TRACKER_URL_IN_FIELD_DESCRIPTION)) {
@@ -139,7 +138,7 @@ public class JiraPrefsFactory implements Prefs {
     @Override
     public StringToStringMap getValues(Settings settings) {
         StringToStringMap values = new StringToStringMap();
-        values.put(BUG_TRACKER_LOGIN, settings.getString(BugTrackerPrefs.LOGIN, BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION));
+        values.put(BUG_TRACKER_LOGIN_LABEL, settings.getString(BugTrackerPrefs.LOGIN, BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION));
         values.put(BUG_TRACKER_PASSWORD, settings.getString(BugTrackerPrefs.PASSWORD, ""));
         values.put(BUG_TRACKER_URL, settings.getString(BugTrackerPrefs.DEFAULT_URL, BUG_TRACKER_URL_IN_FIELD_DESCRIPTION));
         values.put(SKIP_RELEASED_VERSIONS, settings.getBoolean(BugTrackerPrefs.SKIP_VERSIONS, false));
