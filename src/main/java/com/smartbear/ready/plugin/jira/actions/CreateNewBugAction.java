@@ -82,7 +82,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     @Override
     public void perform(ModelItem target, Object o) {
         if (!LicenseCheckUtils.userHasAccessToSoapUING()) {
-            UISupport.showErrorMessage("To use this feature, you need a SoapUI NG Pro license.\nYou can request a Pro trial at SmartBear.com.");
+            UISupport.showErrorMessage("To use this feature, you need a ReadyAPI Test license.\nYou can request a trial at smartbear.com.");
             return;
         }
 
