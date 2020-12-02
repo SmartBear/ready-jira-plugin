@@ -7,7 +7,7 @@ public interface BugTrackerPrefs {
     @Setting(name = JiraPrefsFactory.BUG_TRACKER_URL, description = JiraPrefsFactory.BUG_TRACKER_URL_DESCRIPTION)
     String DEFAULT_URL = BugTrackerPrefs.class.getSimpleName() + "@" + "jira-default-url";
 
-    @Setting(name = JiraPrefsFactory.BUG_TRACKER_LOGIN, description = JiraPrefsFactory.BUG_TRACKER_LOGIN_DESCRIPTION)
+    @Setting(name = JiraPrefsFactory.BUG_TRACKER_LOGIN_LABEL, description = JiraPrefsFactory.BUG_TRACKER_LOGIN_DESCRIPTION)
     String LOGIN = BugTrackerPrefs.class.getSimpleName() + "@" + "jira-login";
 
     @Setting(name = JiraPrefsFactory.BUG_TRACKER_PASSWORD, description = JiraPrefsFactory.BUG_TRACKER_PASSWORD_DESCRIPTION)
