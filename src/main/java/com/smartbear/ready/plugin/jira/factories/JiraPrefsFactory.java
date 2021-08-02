@@ -3,6 +3,7 @@ package com.smartbear.ready.plugin.jira.factories;
 import com.eviware.soapui.actions.Prefs;
 import com.eviware.soapui.model.settings.Settings;
 import com.eviware.soapui.plugins.auto.PluginPrefs;
+import com.eviware.soapui.support.components.ListStyleForm;
 import com.eviware.soapui.support.components.SimpleForm;
 import com.eviware.soapui.support.types.StringToStringMap;
 import com.smartbear.ready.plugin.jira.impl.JiraProvider;
@@ -30,7 +31,7 @@ public class JiraPrefsFactory implements Prefs {
     public static final String SKIP_RELEASED_VERSIONS = "Hide released versions:";
     public static final String SKIP_RELEASED_VERSIONS_DESCRIPTION = "Do not show released versions for \"Fixed Version/s\" field";
 
-    private SimpleForm form;
+    private ListStyleForm form;
 
     private class BugTrackerSettingsChangeListener implements DocumentListener{
 
@@ -95,7 +96,7 @@ public class JiraPrefsFactory implements Prefs {
     @Override
     public SimpleForm getForm() {
         if (form == null) {
-            form = new SimpleForm();
+            form = new ListStyleForm();
             form.addSpace();
             JTextField loginField = form.appendTextField(BUG_TRACKER_LOGIN_LABEL, BUG_TRACKER_LOGIN_DESCRIPTION);
             loginField.getDocument().addDocumentListener(new BugTrackerSettingsChangeListener());
