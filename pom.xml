@@ -99,6 +99,122 @@
                     <groupId>io.swagger</groupId>
                     <artifactId>swagger-inflector-new</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.teamdev.jxbrowser</groupId>
+                    <artifactId>jxbrowser-win32</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.teamdev.jxbrowser</groupId>
+                    <artifactId>jxbrowser-win64</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.teamdev.jxbrowser</groupId>
+                    <artifactId>jxbrowser-mac</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.teamdev.jxbrowser</groupId>
+                    <artifactId>jxbrowser-linux64</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.teamdev.jxbrowser</groupId>
+                    <artifactId>jxbrowser</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.teamdev.jxbrowser</groupId>
+                    <artifactId>jxbrowser-swing</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.smartbear</groupId>
+                    <artifactId>jxbrowser-license</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-cli-picocli</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-console</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-datetime</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-dateutil</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-docgenerator</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-groovydoc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-groovysh</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-jmx</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-json</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-jsr223</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-macro</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-nio</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-servlet</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-sql</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-swing</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-templates</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-test</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-test-junit5</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-testng</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-xml</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.confluent</groupId>
+                    <artifactId>kafka-avro-serializer</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -363,6 +479,18 @@
                 <exclusion>
                     <groupId>org.glassfish.jersey.media</groupId>
                     <artifactId>jersey-media-json-jackson</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protoc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>kafka-clients</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
