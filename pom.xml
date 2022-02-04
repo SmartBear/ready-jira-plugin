@@ -118,17 +118,6 @@
         </dependency>
         <dependency>
             <groupId>com.smartbear</groupId>
-            <artifactId>ready-api-soapui-ng</artifactId>
-            <version>${ready-api-version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.smartbear</groupId>
             <artifactId>ready-api-security</artifactId>
             <version>${ready-api-version}</version>
             <exclusions>
