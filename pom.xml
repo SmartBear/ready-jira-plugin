@@ -6,7 +6,7 @@
 
     <groupId>com.smartbear</groupId>
     <artifactId>ready-jira-plugin</artifactId>
-    <version>1.6.2</version> <!--Don't forget to update PluginConfig file within this version-->
+    <version>1.6.3-SNAPSHOT</version> <!--Don't forget to update PluginConfig file within this version-->
 
     <repositories>
         <repository>
@@ -21,7 +21,8 @@
     </repositories>
 
     <properties>
-        <ready-api-version>3.8.1</ready-api-version>
+        <ready-api-version>3.20.1</ready-api-version>
+        <log4j-core-version>2.17.1</log4j-core-version>
     </properties>
 
     <build>
@@ -539,7 +540,7 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.17.0</version>
+            <version>${log4j-core-version}</version>
         </dependency>
     </dependencies>
 </project>
