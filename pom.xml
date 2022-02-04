@@ -23,6 +23,7 @@
     <properties>
         <ready-api-version>3.20.1</ready-api-version>
         <log4j-core-version>2.17.1</log4j-core-version>
+        <guice.version>4.2.2</guice.version>
     </properties>
 
     <build>
@@ -73,6 +74,28 @@
     <dependencies>
         <dependency>
             <groupId>com.smartbear</groupId>
+            <artifactId>ready-api-core</artifactId>
+            <version>${ready-api-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.smartbear</groupId>
+            <artifactId>ready-api-soapui</artifactId>
+            <version>${ready-api-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.smartbear</groupId>
             <artifactId>ready-api-soapui-pro</artifactId>
             <version>${ready-api-version}</version>
             <exclusions>
@@ -92,6 +115,65 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.smartbear</groupId>
+            <artifactId>ready-api-soapui-ng</artifactId>
+            <version>${ready-api-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.smartbear</groupId>
+            <artifactId>ready-api-security</artifactId>
+            <version>${ready-api-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.smartbear</groupId>
+            <artifactId>loadui-ui</artifactId>
+            <version>${ready-api-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.smartbear</groupId>
+            <artifactId>ready-api-service-v-core</artifactId>
+            <version>${ready-api-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.jgoodies</groupId>
+            <artifactId>forms</artifactId>
+            <version>1.0.7</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>${guice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>swingx</groupId>
+            <artifactId>swingx</artifactId>
+            <version>soapui</version>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
