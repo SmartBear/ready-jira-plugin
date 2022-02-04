@@ -216,6 +216,14 @@
                     <groupId>io.confluent</groupId>
                     <artifactId>kafka-avro-serializer</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>io.confluent</groupId>
+                    <artifactId>kafka-protobuf-serializer</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>kafka_2.11</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
