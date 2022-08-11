@@ -193,10 +193,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+       <!--====== upgraded from 5.2.2 tp 5.2.4 =============-->
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-rest-java-client-core</artifactId>
-            <version>5.2.2</version>
+            <version>5.2.4</version>
         </dependency>
         <dependency>
             <groupId>io.atlassian.fugue</groupId>
