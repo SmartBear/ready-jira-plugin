@@ -154,6 +154,7 @@
                 <exclude>*:*jdtcore*</exclude>
                 <exclude>*:*loadui*</exclude>
                 <exclude>*:*h2*</exclude>
+                <exclude>*:*jakarta*</exclude>
             </excludes>
         </dependencySet>
         <dependencySet>
