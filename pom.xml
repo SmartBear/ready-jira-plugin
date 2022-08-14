@@ -28,8 +28,6 @@
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
-
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -205,21 +203,6 @@
             <groupId>io.atlassian.fugue</groupId>
             <artifactId>fugue</artifactId>
             <version>4.7.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-core</artifactId>
-            <version>1.19</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>1.19</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-json</artifactId>
-            <version>1.19</version>
         </dependency>
         <dependency>
             <groupId>javax.ws.rs</groupId>
