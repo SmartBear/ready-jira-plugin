@@ -6,7 +6,7 @@
 
     <groupId>com.smartbear</groupId>
     <artifactId>ready-jira-plugin</artifactId>
-    <version>1.6.3-SNAPSHOT</version> <!--Don't forget to update PluginConfig file within this version-->
+    <version>1.6.3</version> <!--Don't forget to update PluginConfig file within this version-->
 
     <repositories>
         <repository>
@@ -28,8 +28,6 @@
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
-
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -185,7 +183,7 @@
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-rest-java-client-api</artifactId>
-            <version>5.2.2</version>
+            <version>5.2.4</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
@@ -193,30 +191,18 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+       <!--====== upgraded from 5.2.2 tp 5.2.4 =============-->
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-rest-java-client-core</artifactId>
-            <version>5.2.2</version>
+            <version>5.2.4</version>
         </dependency>
+
         <dependency>
             <groupId>io.atlassian.fugue</groupId>
             <artifactId>fugue</artifactId>
             <version>4.7.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-core</artifactId>
-            <version>1.19</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>1.19</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-json</artifactId>
-            <version>1.19</version>
         </dependency>
         <dependency>
             <groupId>javax.ws.rs</groupId>
