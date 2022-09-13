@@ -1,10 +1,6 @@
 package com.smartbear.ready.plugin.jira.impl;
 
-import com.atlassian.jira.rest.client.api.GetCreateIssueMetadataOptions;
-import com.atlassian.jira.rest.client.api.GetCreateIssueMetadataOptionsBuilder;
-import com.atlassian.jira.rest.client.api.JiraRestClient;
-import com.atlassian.jira.rest.client.api.MetadataRestClient;
-import com.atlassian.jira.rest.client.api.OptionalIterable;
+import com.atlassian.jira.rest.client.api.*;
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 import com.atlassian.jira.rest.client.api.domain.BasicProject;
 import com.atlassian.jira.rest.client.api.domain.CimFieldInfo;
@@ -21,6 +17,7 @@ import com.atlassian.jira.rest.client.api.domain.Version;
 import com.atlassian.jira.rest.client.api.domain.input.ComplexIssueInputFieldValue;
 import com.atlassian.jira.rest.client.api.domain.input.FieldInput;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
+import com.atlassian.jira.rest.client.internal.async.AsynchronousIssueRestClient;
 import com.eviware.soapui.SoapUI;
 import com.eviware.soapui.actions.SoapUIPreferencesAction;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
@@ -116,7 +113,11 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         final AsynchronousJiraRestClientFactoryEx factory = new AsynchronousJiraRestClientFactoryEx();
 
         try {
-            restClient = factory.createWithBasicHttpAuthentication(new URI(bugTrackerSettings.getUrl()), bugTrackerSettings.getLogin(), bugTrackerSettings.getPassword());
+            String url = bugTrackerSettings.getUrl();
+            URI uri = new URI(url);
+            restClient = factory.createWithBasicHttpAuthentication(uri, bugTrackerSettings.getLogin(), bugTrackerSettings.getPassword());
+//            restClient = factory.createWithBasicHttpAuthentication(new URI(bugTrackerSettings.getUrl()), bugTrackerSettings.getLogin(), bugTrackerSettings.getPassword());
+            logger.info("[JiraProvider].[JiraProvider] restClient", restClient.toString());
         } catch (URISyntaxException e) {
             logger.error(BUG_TRACKER_URI_IS_INCORRECT);
             UISupport.showErrorMessage(BUG_TRACKER_URI_IS_INCORRECT);
@@ -291,7 +292,15 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     .withProjectKeys(unCachedProjectsList.toArray(unCachedProjectsArray))
                     .build();
             try {
-                Iterable<CimProject> cimProjects = restClient.getIssueClient().getCreateIssueMetadata(options).get();
+                //TODO: just log more information here to make sure changes applied to readyAPI
+                logger.info("[JiraProvider].[getProjectFieldsInternal] we reach here");
+                IssueRestClient issueRestClient = restClient.getIssueClient();
+
+                Promise<Iterable<CimProject>> cimProjectPromise = issueRestClient.getCreateIssueMetadata(options);
+                Iterable<CimProject> cimProjects = cimProjectPromise.get();
+//                Iterable<CimProject> cimProjects = restClient.getIssueClient().getCreateIssueMetadata(options).get();
+
+
                 for (CimProject cimProject : cimProjects) {
                     Iterable<CimIssueType> issueTypes = cimProject.getIssueTypes();
                     HashMap<String, Map<String, CimFieldInfo>> issueTypeFields = new HashMap<String, Map<String, CimFieldInfo>>();
