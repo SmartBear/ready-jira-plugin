@@ -26,6 +26,7 @@ import com.eviware.soapui.model.settings.Settings;
 import com.eviware.soapui.model.support.ModelSupport;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
+import com.smartbear.ready.plugin.jira.actions.CreateNewBugAction;
 import com.smartbear.ready.plugin.jira.clients.AsynchronousJiraRestClientEx;
 import com.smartbear.ready.plugin.jira.clients.AsynchronousUserSearchRestClient;
 import com.smartbear.ready.plugin.jira.factories.AsynchronousJiraRestClientFactoryEx;
@@ -291,6 +292,13 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     .withExpandedIssueTypesFields()
                     .withProjectKeys(unCachedProjectsList.toArray(unCachedProjectsArray))
                     .build();
+            StringBuilder builder = new StringBuilder();
+            builder.append(options.projectIds).append("|");
+            builder.append(options.projectKeys).append("|");
+            builder.append(options.expandos).append("|");
+            builder.append(options.issueTypeNames).append("|");
+            builder.append(options.issueTypeIds).append("|");
+            logger.info("JiraProvider.getProjectFieldsInternal.options : {}", builder);
             try {
                 //TODO: just log more information here to make sure changes applied to readyAPI
                 logger.info("[JiraProvider].[getProjectFieldsInternal] we reach here");
@@ -627,5 +635,18 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                 soapuiSettings.getString(BugTrackerPrefs.LOGIN, ""),
                 soapuiSettings.getString(BugTrackerPrefs.PASSWORD, ""),
                 soapuiSettings.getBoolean(BugTrackerPrefs.SKIP_VERSIONS, false));
+    }
+
+    @Override
+    public String toString() {
+        return "JiraProvider{" +
+                "activeElement=" + activeElement +
+                ", restClient=" + restClient +
+                ", bugTrackerSettings=" + bugTrackerSettings +
+                ", allProjects=" + allProjects +
+                ", requestedProjects=" + requestedProjects +
+                ", priorities=" + priorities +
+                ", projectFields=" + projectFields +
+                '}';
     }
 }

@@ -25,7 +25,8 @@ public class AsynchronousJiraRestClientServer implements JiraRestClient {
         this.httpClient = httpClient;
         this.metadataRestClient = new AsynchronousMetadataRestClient(baseUri, httpClient);
         this.sessionRestClient = new AsynchronousSessionRestClient(serverUri, httpClient);
-        this.issueRestClient = new AsynchronousIssueRestClient(baseUri, httpClient, this.sessionRestClient, this.metadataRestClient);
+
+        this.issueRestClient = new AsynchronousIssueRestClientServerEx(baseUri, httpClient, this.sessionRestClient, this.metadataRestClient);
         this.userRestClient = new AsynchronousUserRestClient(baseUri, httpClient);
         this.groupRestClient = new AsynchronousGroupRestClient(baseUri, httpClient);
         this.projectRestClient = new AsynchronousProjectRestClient(baseUri, httpClient);
