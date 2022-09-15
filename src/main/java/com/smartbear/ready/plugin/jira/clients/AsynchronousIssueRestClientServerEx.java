@@ -33,7 +33,7 @@ public class AsynchronousIssueRestClientServerEx extends AsynchronousIssueRestCl
         }
 
         uriBuilder.path("/issuetypes");
-
+        this.createIssueMetadataJsonParser.setOptions(options);
         return this.getAndParse(uriBuilder.build(), this.createIssueMetadataJsonParser);
     }
 }
