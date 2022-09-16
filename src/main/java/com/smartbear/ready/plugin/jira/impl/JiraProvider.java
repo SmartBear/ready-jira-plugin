@@ -1,10 +1,6 @@
 package com.smartbear.ready.plugin.jira.impl;
 
-import com.atlassian.jira.rest.client.api.GetCreateIssueMetadataOptions;
-import com.atlassian.jira.rest.client.api.GetCreateIssueMetadataOptionsBuilder;
-import com.atlassian.jira.rest.client.api.JiraRestClient;
-import com.atlassian.jira.rest.client.api.MetadataRestClient;
-import com.atlassian.jira.rest.client.api.OptionalIterable;
+import com.atlassian.jira.rest.client.api.*;
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 import com.atlassian.jira.rest.client.api.domain.BasicProject;
 import com.atlassian.jira.rest.client.api.domain.CimFieldInfo;
@@ -29,8 +25,11 @@ import com.eviware.soapui.model.settings.Settings;
 import com.eviware.soapui.model.support.ModelSupport;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
+import com.smartbear.ready.plugin.jira.clients.AsynchronousIssueRestClientServerEx;
 import com.smartbear.ready.plugin.jira.clients.AsynchronousJiraRestClientEx;
+import com.smartbear.ready.plugin.jira.clients.AsynchronousJiraRestClientServerEx;
 import com.smartbear.ready.plugin.jira.clients.AsynchronousUserSearchRestClient;
+import com.smartbear.ready.plugin.jira.clients.AsynchronousUserSearchRestClientExt;
 import com.smartbear.ready.plugin.jira.factories.AsynchronousJiraRestClientFactoryEx;
 import com.smartbear.ready.plugin.jira.factories.JiraPrefsFactory;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerPrefs;
@@ -116,7 +115,10 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         final AsynchronousJiraRestClientFactoryEx factory = new AsynchronousJiraRestClientFactoryEx();
 
         try {
-            restClient = factory.createWithBasicHttpAuthentication(new URI(bugTrackerSettings.getUrl()), bugTrackerSettings.getLogin(), bugTrackerSettings.getPassword());
+            String url = bugTrackerSettings.getUrl();
+            URI uri = new URI(url);
+            restClient = factory.createWithBasicHttpAuthentication(uri, bugTrackerSettings.getLogin(), bugTrackerSettings.getPassword());
+            logger.info("[JiraProvider].[JiraProvider] restClient", restClient.toString());
         } catch (URISyntaxException e) {
             logger.error(BUG_TRACKER_URI_IS_INCORRECT);
             UISupport.showErrorMessage(BUG_TRACKER_URI_IS_INCORRECT);
@@ -291,12 +293,36 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     .withProjectKeys(unCachedProjectsList.toArray(unCachedProjectsArray))
                     .build();
             try {
-                Iterable<CimProject> cimProjects = restClient.getIssueClient().getCreateIssueMetadata(options).get();
+                //TODO: just log more information here to make sure changes applied to readyAPI
+                logger.info("[JiraProvider].[getProjectFieldsInternal] we reach here");
+                IssueRestClient issueRestClient = restClient.getIssueClient();
+
+                Promise<Iterable<CimProject>> cimProjectPromise = issueRestClient.getCreateIssueMetadata(options);
+                Iterable<CimProject> cimProjects = cimProjectPromise.get();
+
                 for (CimProject cimProject : cimProjects) {
                     Iterable<CimIssueType> issueTypes = cimProject.getIssueTypes();
                     HashMap<String, Map<String, CimFieldInfo>> issueTypeFields = new HashMap<String, Map<String, CimFieldInfo>>();
                     for (CimIssueType currentIssueType : issueTypes) {
-                        issueTypeFields.put(currentIssueType.getName(), currentIssueType.getFields());
+                        if (issueRestClient instanceof AsynchronousIssueRestClientServerEx) {
+                            try {
+                                Map<String, CimFieldInfo> cimFieldInfoMap = new HashMap<>();
+                                Promise<Iterable<CimFieldInfo>> promiseCimFieldInfo = ((AsynchronousIssueRestClientServerEx)issueRestClient).getFieldsByIssueId(options, currentIssueType.getId());
+                                Iterable<CimFieldInfo> cimFieldInfos = promiseCimFieldInfo.get();
+                                for (CimFieldInfo currentCimFieldInfo : cimFieldInfos) {
+                                    cimFieldInfoMap.put(currentCimFieldInfo.getId(), currentCimFieldInfo);
+                                }
+                                currentIssueType = new CimIssueType(currentIssueType.getSelf(),
+                                        currentIssueType.getId(), currentIssueType.getName(), currentIssueType.isSubtask(),
+                                        currentIssueType.getDescription(), currentIssueType.getIconUri(), cimFieldInfoMap);
+                                issueTypeFields.put(currentIssueType.getName(), currentIssueType.getFields());
+                            } catch (Exception ex) {
+                                logger.error("A error occurred when create issue on Jira server");
+
+                            }
+                        } else {
+                            issueTypeFields.put(currentIssueType.getName(), currentIssueType.getFields());
+                        }
                     }
                     projectFields.put(cimProject.getKey(), issueTypeFields);
                 }
@@ -485,8 +511,14 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     }
 
     private User getUser(String username) throws Exception {
-        AsynchronousUserSearchRestClient userSearchRestClient = ((AsynchronousJiraRestClientEx) restClient).getUserSearchRestClient();
-        User user = userSearchRestClient.getUser(username).get();
+        User user = null;
+        if (restClient instanceof AsynchronousJiraRestClientEx) {
+            AsynchronousUserSearchRestClient userSearchRestClient = ((AsynchronousJiraRestClientEx) restClient).getUserSearchRestClient();
+            user = userSearchRestClient.getUser(username).get();
+        } else if (restClient instanceof AsynchronousJiraRestClientServerEx) {
+            AsynchronousUserSearchRestClientExt userSearchRestClientExt = ((AsynchronousJiraRestClientServerEx) restClient).getUserSearchRestClient();
+            user = userSearchRestClientExt.getUser(username).get();
+        }
         if (user == null) {
             throw new Exception(String.format(USER_NAME_NOT_FOUND, username));
         }

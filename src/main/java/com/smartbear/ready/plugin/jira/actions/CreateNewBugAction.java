@@ -35,9 +35,12 @@ import com.smartbear.ready.plugin.jira.impl.JiraProvider;
 import com.smartbear.ready.plugin.jira.impl.SwingXScrollableFormDialogBuilder;
 import com.smartbear.ready.plugin.jira.impl.XFormDialogEx;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.GraphicsEnvironment;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -62,6 +65,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     private static final String MULTICHECKBOXES_CUSTOM_FIELD_TYPE = "com.atlassian.jira.plugin.system.customfieldtypes:multicheckboxes";
 
     protected String selectedProject, selectedIssueType;
+    private static final Logger logger = LoggerFactory.getLogger(CreateNewBugAction.class);
 
     public static final String DESCRIPTION_FIELD_NAME = "description";
     private static final List<String> skippedFieldKeys = Arrays.asList("summary",
@@ -175,7 +179,12 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         @Override
         public Object construct(XProgressMonitor xProgressMonitor) {
             isAttachmentSuccess = true;
-            URI newIssueAttachURI = bugTrackerProvider.getIssue(creationResult.getIssue().getKey()).getAttachmentsUri();
+            URI newIssueAttachURI = null;
+            try {
+                newIssueAttachURI = new URI(creationResult.getIssue().getSelf().toString().concat("/attachments"));
+            } catch (URISyntaxException e) {
+                logger.error("[CreateNewBugAction][construct] Error while createIssue , newIssueAttachURI: {}", e.getMessage());
+            }
             resultError = new StringBuilder();
             if (issueDetails.getBooleanValue(BugInfoDialogConsts.ATTACH_READYAPI_LOG)) {
                 AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI,
@@ -332,6 +341,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     }
 
     private CimFieldInfo getFieldInfo(JiraProvider bugTrackerProvider, String selectedProject, String selectedIssueType, String fieldInfoKey) {
+        logger.info("getFieldInfo.bugTrackerProvider : {}, selectedProject : {}, fieldInfoKey: {}", bugTrackerProvider.toString(), selectedProject, fieldInfoKey);
         Map<String, Map<String, Map<String, CimFieldInfo>>> allFields = bugTrackerProvider.getProjectFields(selectedProject);
         for (Map.Entry<String, CimFieldInfo> field : allFields.get(selectedProject).get(selectedIssueType).entrySet()) {
             String key = field.getKey();

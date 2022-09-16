@@ -8,6 +8,7 @@ import com.atlassian.jira.rest.client.internal.async.AsynchronousHttpClientFacto
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
 import com.atlassian.jira.rest.client.internal.async.DisposableHttpClient;
 import com.smartbear.ready.plugin.jira.clients.AsynchronousJiraRestClientEx;
+import com.smartbear.ready.plugin.jira.clients.AsynchronousJiraRestClientServerEx;
 
 import java.net.URI;
 
@@ -16,7 +17,11 @@ public class AsynchronousJiraRestClientFactoryEx extends AsynchronousJiraRestCli
     public JiraRestClient create(final URI serverUri, final AuthenticationHandler authenticationHandler) {
         final DisposableHttpClient httpClient = new AsynchronousHttpClientFactory()
                 .createClient(serverUri, authenticationHandler);
-        return new AsynchronousJiraRestClientEx(serverUri, httpClient);
+        if (serverUri.getHost().contains("atlassian.net")) {
+            return new AsynchronousJiraRestClientEx(serverUri, httpClient);
+        } else {
+            return new AsynchronousJiraRestClientServerEx(serverUri, httpClient);
+        }
     }
 
     @Override
@@ -27,6 +32,10 @@ public class AsynchronousJiraRestClientFactoryEx extends AsynchronousJiraRestCli
     @Override
     public JiraRestClient create(final URI serverUri, final HttpClient httpClient) {
         final DisposableHttpClient disposableHttpClient = new AsynchronousHttpClientFactory().createClient(httpClient);
-        return new AsynchronousJiraRestClientEx(serverUri, disposableHttpClient);
+        if (serverUri.getHost().contains("atlassian.net")) {
+            return new AsynchronousJiraRestClientEx(serverUri, disposableHttpClient);
+        } else {
+            return new AsynchronousJiraRestClientServerEx(serverUri, disposableHttpClient);
+        }
     }
 }
