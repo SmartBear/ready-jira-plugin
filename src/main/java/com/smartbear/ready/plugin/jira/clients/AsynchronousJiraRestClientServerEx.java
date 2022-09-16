@@ -4,15 +4,15 @@ import com.atlassian.jira.rest.client.internal.async.DisposableHttpClient;
 
 import java.net.URI;
 
-public class AsynchronousJiraRestClientServerEx extends AsynchronousJiraRestClientServer{
-    private final AsynchronousUserSearchRestClient userSearchRestClient;
+public class AsynchronousJiraRestClientServerEx extends AsynchronousJiraRestClientServer {
+    private final AsynchronousUserSearchRestClientExt userSearchRestClientExt;
 
     public AsynchronousJiraRestClientServerEx(final URI serverUri, final DisposableHttpClient httpClient) {
         super(serverUri, httpClient);
-        userSearchRestClient = new AsynchronousUserSearchRestClient(serverUri, httpClient);
+        userSearchRestClientExt = new AsynchronousUserSearchRestClientExt(serverUri, httpClient);
     }
 
-    public AsynchronousUserSearchRestClient getUserSearchRestClient() {
-        return userSearchRestClient;
+    public AsynchronousUserSearchRestClientExt getUserSearchRestClient() {
+        return userSearchRestClientExt;
     }
 }
