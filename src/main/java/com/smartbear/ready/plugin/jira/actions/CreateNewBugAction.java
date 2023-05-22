@@ -113,8 +113,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                 int screenHeight = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight();
                 dialogTwoEx.setHeight(7 * screenHeight / 10);
             }
-
-            if (dialogTwo.show()) {
+            if (dialogTwo != null && dialogTwo.show()) {
                 handleOkAction(bugTrackerProvider, dialogTwo);
             }
         } else {
@@ -244,8 +243,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
         String projectKey = selectedProject;
         String issueType = selectedIssueType;
         Map<String, Object> extraValues = new HashMap<>();
-        for (Map.Entry<String, CimFieldInfo> entry :
-                bugTrackerProvider.getProjectFields(projectKey).get(projectKey).get(issueType).entrySet()) {
+        for (Map.Entry<String, CimFieldInfo> entry : bugTrackerProvider.getProjectFields(projectKey)
+                .getOrDefault(projectKey, new HashMap<>()).getOrDefault(issueType, new HashMap<>()).entrySet()) {
             String key = entry.getKey();
             if (skippedFieldKeys.contains(key) &&
                     !key.equals(JiraProvider.VERSIONS_FIELD_NAME) &&
@@ -343,9 +342,10 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     private CimFieldInfo getFieldInfo(JiraProvider bugTrackerProvider, String selectedProject, String selectedIssueType, String fieldInfoKey) {
         logger.info("getFieldInfo.bugTrackerProvider : {}, selectedProject : {}, fieldInfoKey: {}", bugTrackerProvider.toString(), selectedProject, fieldInfoKey);
         Map<String, Map<String, Map<String, CimFieldInfo>>> allFields = bugTrackerProvider.getProjectFields(selectedProject);
-        for (Map.Entry<String, CimFieldInfo> field : allFields.get(selectedProject).get(selectedIssueType).entrySet()) {
+        for (Map.Entry<String, CimFieldInfo> field : allFields.getOrDefault(selectedProject, new HashMap<>())
+                .getOrDefault(selectedIssueType, new HashMap<>()).entrySet()) {
             String key = field.getKey();
-            if (key.equals(fieldInfoKey)) {
+            if (key != null && key.equals(fieldInfoKey)) {
                 return field.getValue();
             }
         }
@@ -354,7 +354,8 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
 
     private void addExtraFields(XForm baseDialog, JiraProvider bugTrackerProvider, String selectedProject, String selectedIssueType) {
         Map<String, Map<String, Map<String, CimFieldInfo>>> allFields = bugTrackerProvider.getProjectFields(selectedProject);
-        for (Map.Entry<String, CimFieldInfo> field : allFields.get(selectedProject).get(selectedIssueType).entrySet()) {
+        for (Map.Entry<String, CimFieldInfo> field : allFields.getOrDefault(selectedProject,
+                new HashMap<>()).getOrDefault(selectedIssueType, new HashMap<>()).entrySet()) {
             String key = field.getKey();
             if (skippedFieldKeys.contains(key)) {
                 continue;

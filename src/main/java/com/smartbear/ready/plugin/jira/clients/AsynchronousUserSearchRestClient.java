@@ -22,9 +22,9 @@ public class AsynchronousUserSearchRestClient extends AsynchronousUserRestClient
     }
 
     @Override
-    public Promise<User> getUser(final String fullname) {
+    public Promise<User> getUser(final String fullName) {
         final URI userUri = UriBuilder.fromUri(baseUri).path(USER_SEARCH_PREFIX)
-                .queryParam("query", fullname).queryParam("maxResults", "1").build();
+                .queryParam("query", fullName).queryParam("maxResults", "1").build();
         return getUser(userUri);
     }
 
