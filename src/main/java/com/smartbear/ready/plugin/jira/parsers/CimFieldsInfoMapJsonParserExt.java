@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class CimFieldsInfoMapJsonParserExt extends CimFieldsInfoMapJsonParser {
 
-    private final CimFieldsInfoJsonParserExt cimFieldsInfoJsonParserext = new CimFieldsInfoJsonParserExt();
+    private final CimFieldsInfoJsonParserExt cimFieldsInfoJsonParserExt = new CimFieldsInfoJsonParserExt();
 
     public CimFieldsInfoMapJsonParserExt(){}
 
@@ -21,7 +21,7 @@ public class CimFieldsInfoMapJsonParserExt extends CimFieldsInfoMapJsonParser {
 
         while (keysIterator.hasNext()) {
             String id = (String)keysIterator.next();
-            res.put(id, this.cimFieldsInfoJsonParserext.parse(json.getJSONObject(id), id));
+            res.put(id, this.cimFieldsInfoJsonParserExt.parse(json.getJSONObject(id), id));
         }
         return res;
     }

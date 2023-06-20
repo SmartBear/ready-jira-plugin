@@ -14,8 +14,8 @@ import java.util.Map;
 
 public class CimIssueTypeJsonParserExt extends CimIssueTypeJsonParser {
 
-    final IssueTypeJsonParser issueTypeJsonParser = new IssueTypeJsonParser();
-    final CimFieldsInfoMapJsonParser fieldsParser = new CimFieldsInfoMapJsonParserExt();
+    private final IssueTypeJsonParser issueTypeJsonParser = new IssueTypeJsonParser();
+    private final CimFieldsInfoMapJsonParser fieldsParser = new CimFieldsInfoMapJsonParserExt();
 
     public CimIssueTypeJsonParserExt() {
     }

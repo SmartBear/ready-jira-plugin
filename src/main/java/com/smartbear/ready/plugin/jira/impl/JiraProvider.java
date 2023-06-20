@@ -346,7 +346,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         BasicIssue basicIssue = null;
         try {
             JiraApiCallResult<IssueType> issueType = getIssueType(projectKey, issueTypeKey);
-            if (issueType!= null && !issueType.isSuccess()) {
+            if (issueType != null && !issueType.isSuccess()) {
                 return new IssueCreationResult(issueType.getError().getMessage());
             }
 
