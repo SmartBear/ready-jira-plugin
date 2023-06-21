@@ -3,6 +3,7 @@ package com.smartbear.ready.plugin.jira.parsers;
 import com.atlassian.jira.rest.client.api.domain.BasicProject;
 import com.atlassian.jira.rest.client.api.domain.CimIssueType;
 import com.atlassian.jira.rest.client.api.domain.CimProject;
+import com.atlassian.jira.rest.client.internal.json.CimIssueTypeJsonParser;
 import com.atlassian.jira.rest.client.internal.json.CimProjectJsonParser;
 import com.atlassian.jira.rest.client.internal.json.GenericJsonArrayParser;
 import com.atlassian.jira.rest.client.internal.json.JsonArrayParser;
@@ -16,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CimProjectServerJsonParser extends CimProjectJsonParser {
-    private final JsonArrayParser<Iterable<CimIssueType>> issueTypesParser = GenericJsonArrayParser.create(new CimIssueTypeJsonParserExt());
+    private final JsonArrayParser<Iterable<CimIssueType>> issueTypesParser = GenericJsonArrayParser.create(new CimIssueTypeJsonParser());
     private final BasicProjectServerJsonParser basicProjectJsonParser = new BasicProjectServerJsonParser();
     public CimProjectServerJsonParser() {}
 
