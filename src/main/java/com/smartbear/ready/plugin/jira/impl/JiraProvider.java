@@ -138,11 +138,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         try {
             allProjects = restClient.getProjectClient().getAllProjects().get();
             return new JiraApiCallResult<Iterable<BasicProject>>(allProjects);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-            allProjects = null;
-            return new JiraApiCallResult<Iterable<BasicProject>>(e);
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             logger.error(e.getMessage());
             allProjects = null;
             return new JiraApiCallResult<Iterable<BasicProject>>(e);
@@ -167,10 +163,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         if (!requestedProjects.containsKey(key)) {
             try {
                 requestedProjects.put(key, restClient.getProjectClient().getProject(key).get());
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-                return new JiraApiCallResult<>(e);
-            } catch (ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 logger.error(e.getMessage());
                 return new JiraApiCallResult<>(e);
             }
@@ -222,9 +215,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             final MetadataRestClient client = restClient.getMetadataClient();
             try {
                 priorities = client.getPriorities().get();
-            } catch (InterruptedException e) {
-                return new JiraApiCallResult<>(e);
-            } catch (ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 return new JiraApiCallResult<>(e);
             }
         }
@@ -260,9 +251,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     public Issue getIssue(String key) {
         try {
             return restClient.getIssueClient().getIssue(key).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
 
@@ -275,7 +264,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             return projectFieldsResult.getResult();
         }
 
-        return null;
+        return new HashMap<>();
     }
 
     private JiraApiCallResult<Map<String, Map<String, Map<String, CimFieldInfo>>>> getProjectFieldsInternal(String... projects) {
@@ -296,7 +285,6 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                 //TODO: just log more information here to make sure changes applied to readyAPI
                 logger.info("[JiraProvider].[getProjectFieldsInternal] we reach here");
                 IssueRestClient issueRestClient = restClient.getIssueClient();
-
                 Promise<Iterable<CimProject>> cimProjectPromise = issueRestClient.getCreateIssueMetadata(options);
                 Iterable<CimProject> cimProjects = cimProjectPromise.get();
 
@@ -307,7 +295,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                         if (issueRestClient instanceof AsynchronousIssueRestClientServerEx) {
                             try {
                                 Map<String, CimFieldInfo> cimFieldInfoMap = new HashMap<>();
-                                Promise<Iterable<CimFieldInfo>> promiseCimFieldInfo = ((AsynchronousIssueRestClientServerEx)issueRestClient).getFieldsByIssueId(options, currentIssueType.getId());
+                                Promise<Iterable<CimFieldInfo>> promiseCimFieldInfo = ((AsynchronousIssueRestClientServerEx) issueRestClient).getFieldsByIssueId(options, currentIssueType.getId());
                                 Iterable<CimFieldInfo> cimFieldInfos = promiseCimFieldInfo.get();
                                 for (CimFieldInfo currentCimFieldInfo : cimFieldInfos) {
                                     cimFieldInfoMap.put(currentCimFieldInfo.getId(), currentCimFieldInfo);
@@ -317,8 +305,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                                         currentIssueType.getDescription(), currentIssueType.getIconUri(), cimFieldInfoMap);
                                 issueTypeFields.put(currentIssueType.getName(), currentIssueType.getFields());
                             } catch (Exception ex) {
-                                logger.error("A error occurred when create issue on Jira server");
-
+                                logger.error("A error occurred when create issue on Jira server", ex);
                             }
                         } else {
                             issueTypeFields.put(currentIssueType.getName(), currentIssueType.getFields());
@@ -326,9 +313,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                     }
                     projectFields.put(cimProject.getKey(), issueTypeFields);
                 }
-            } catch (InterruptedException e) {
-                return new JiraApiCallResult<>(e);
-            } catch (ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 return new JiraApiCallResult<>(e);
             }
         }
@@ -361,7 +346,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         BasicIssue basicIssue = null;
         try {
             JiraApiCallResult<IssueType> issueType = getIssueType(projectKey, issueTypeKey);
-            if (!issueType.isSuccess()) {
+            if (issueType != null && !issueType.isSuccess()) {
                 return new IssueCreationResult(issueType.getError().getMessage());
             }
 
