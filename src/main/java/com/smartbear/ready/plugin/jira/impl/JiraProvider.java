@@ -62,10 +62,10 @@ import java.util.concurrent.ExecutionException;
 public class JiraProvider implements SimpleBugTrackerProvider {
     private static final Logger logger = LoggerFactory.getLogger(JiraProvider.class);
 
-    private final static String BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED = "No issue key is specified.";
-    private final static String BUG_TRACKER_FILE_NAME_NOT_SPECIFIED = "No file name is specified.";
-    private final static String BUG_TRACKER_INCORRECT_FILE_PATH = "Incorrect file path.";
-    private final static String BUG_TRACKER_URI_IS_INCORRECT = "The JIRA URL format is incorrect.";
+    private static final String BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED = "No issue key is specified.";
+    private static final String BUG_TRACKER_FILE_NAME_NOT_SPECIFIED = "No file name is specified.";
+    private static final String BUG_TRACKER_INCORRECT_FILE_PATH = "Incorrect file path.";
+    private static final String BUG_TRACKER_URI_IS_INCORRECT = "The JIRA URL format is incorrect.";
     public static final String BUG_TRACKER_SETTINGS_ARE_NOT_COMPLETELY_SPECIFIED = "Unable to create a JIRA item.\nThe JIRA Integration plugin's settings are not configured or invalid.";
     public static final String INCORRECT_PROTOCOL_IN_THE_JIRA_URL = "\nPerhaps,  you specified the HTTP protocol in the JIRA URL instead of HTTPS.";
     public static final String USER_NAME_NOT_FOUND = "%s user is not found";
@@ -83,7 +83,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     private ModelItem activeElement;
     private JiraRestClient restClient = null;
     private BugTrackerSettings bugTrackerSettings;
-    static private JiraProvider instance = null;
+    private static JiraProvider instance = null;
 
     //Properties below exist for reducing number of Jira API calls since every call is very greedy operation
     Iterable<BasicProject> allProjects = null;
@@ -132,26 +132,26 @@ public class JiraProvider implements SimpleBugTrackerProvider {
 
     private JiraApiCallResult<Iterable<BasicProject>> getAllProjects() {
         if (allProjects != null) {
-            return new JiraApiCallResult<Iterable<BasicProject>>(allProjects);
+            return new JiraApiCallResult<>(allProjects);
         }
 
         try {
             allProjects = restClient.getProjectClient().getAllProjects().get();
-            return new JiraApiCallResult<Iterable<BasicProject>>(allProjects);
+            return new JiraApiCallResult<>(allProjects);
         } catch (InterruptedException | ExecutionException e) {
             logger.error(e.getMessage());
             allProjects = null;
-            return new JiraApiCallResult<Iterable<BasicProject>>(e);
+            return new JiraApiCallResult<>(e);
         }
     }
 
     public List<String> getListOfAllProjects() {
         JiraApiCallResult<Iterable<BasicProject>> projects = getAllProjects();
         if (!projects.isSuccess()) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
 
-        List<String> projectNames = new ArrayList<String>();
+        List<String> projectNames = new ArrayList<>();
         for (BasicProject project : projects.getResult()) {
             projectNames.add(project.getKey());
         }
@@ -185,7 +185,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             return new ArrayList<>();
         }
 
-        List<String> issueTypeList = new ArrayList<String>();
+        List<String> issueTypeList = new ArrayList<>();
         OptionalIterable<IssueType> issueTypes = result.getResult();
         for (IssueType issueType : issueTypes) {
             issueTypeList.add(issueType.getName());
@@ -223,11 +223,11 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     }
 
     private Priority getPriorityByName(String priorityName) {
-        JiraApiCallResult<Iterable<Priority>> priorities = getAllPriorities();
-        if (!priorities.isSuccess()) {
+        JiraApiCallResult<Iterable<Priority>> prioritiesResponse = getAllPriorities();
+        if (!prioritiesResponse.isSuccess()) {
             return null;
         }
-        for (Priority priority : priorities.getResult()) {
+        for (Priority priority : prioritiesResponse.getResult()) {
             if (priority.getName().equals(priorityName)) {
                 return priority;
             }
@@ -238,11 +238,11 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     private JiraApiCallResult<IssueType> getIssueType(String projectKey, String requiredIssueType) {
         JiraApiCallResult<OptionalIterable<IssueType>> issueTypes = getProjectIssueTypes(projectKey);
         if (!issueTypes.isSuccess()) {
-            return new JiraApiCallResult<IssueType>(issueTypes.getError());
+            return new JiraApiCallResult<>(issueTypes.getError());
         }
         for (IssueType issueType : issueTypes.getResult()) {
             if (issueType.getName().equals(requiredIssueType)) {
-                return new JiraApiCallResult<IssueType>(issueType);
+                return new JiraApiCallResult<>(issueType);
             }
         }
         return null;
@@ -274,7 +274,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                 unCachedProjectsList.add(project);
             }
         }
-        if (unCachedProjectsList.size() > 0) {
+        if (!unCachedProjectsList.isEmpty()) {
             String[] unCachedProjectsArray = new String[unCachedProjectsList.size()];
             unCachedProjectsList.toArray(unCachedProjectsArray);
             GetCreateIssueMetadataOptions options = new GetCreateIssueMetadataOptionsBuilder()
@@ -290,7 +290,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
 
                 for (CimProject cimProject : cimProjects) {
                     Iterable<CimIssueType> issueTypes = cimProject.getIssueTypes();
-                    HashMap<String, Map<String, CimFieldInfo>> issueTypeFields = new HashMap<String, Map<String, CimFieldInfo>>();
+                    HashMap<String, Map<String, CimFieldInfo>> issueTypeFields = new HashMap<>();
                     for (CimIssueType currentIssueType : issueTypes) {
                         if (issueRestClient instanceof AsynchronousIssueRestClientServerEx) {
                             try {
@@ -343,7 +343,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             return new IssueCreationResult(BUG_TRACKER_URI_IS_INCORRECT);
         }
 
-        BasicIssue basicIssue = null;
+        BasicIssue basicIssue;
         try {
             JiraApiCallResult<IssueType> issueType = getIssueType(projectKey, issueTypeKey);
             if (issueType != null && !issueType.isSuccess()) {
@@ -359,84 +359,69 @@ public class JiraProvider implements SimpleBugTrackerProvider {
                 if (extraRequiredValue.getKey().equals(PRIORITY_FIELD_NAME)) {
                     issueInputBuilder.setPriority(getPriorityByName((String) extraRequiredValue.getValue()));
                 } else if (extraRequiredValue.getKey().equals(COMPONENTS_FIELD_NAME)) {
-                    issueInputBuilder.setComponentsNames(new Iterable<String>() {
+                    issueInputBuilder.setComponentsNames(() -> new Iterator<>() {
+                        boolean hasValue = true;
+
                         @Override
-                        public Iterator<String> iterator() {
-                            return new Iterator<String>() {
-                                boolean hasValue = true;
+                        public boolean hasNext() {
+                            return hasValue;
+                        }
 
-                                @Override
-                                public boolean hasNext() {
-                                    return hasValue;
-                                }
+                        @Override
+                        public String next() {
+                            hasValue = false;
+                            return (String) extraRequiredValue.getValue();
+                        }
 
-                                @Override
-                                public String next() {
-                                    hasValue = false;
-                                    return (String) extraRequiredValue.getValue();
-                                }
+                        @Override
+                        public void remove() {
 
-                                @Override
-                                public void remove() {
-
-                                }
-                            };
                         }
                     });
                 } else if (extraRequiredValue.getKey().equals(VERSIONS_FIELD_NAME)) {
-                    issueInputBuilder.setAffectedVersionsNames(new Iterable<String>() {
+                    issueInputBuilder.setAffectedVersionsNames(() -> new Iterator<>() {
+                        boolean hasValue = true;
+
                         @Override
-                        public Iterator<String> iterator() {
-                            return new Iterator<String>() {
-                                boolean hasValue = true;
+                        public boolean hasNext() {
+                            return hasValue;
+                        }
 
-                                @Override
-                                public boolean hasNext() {
-                                    return hasValue;
-                                }
+                        @Override
+                        public String next() {
+                            hasValue = false;
+                            return (String) extraRequiredValue.getValue();
+                        }
 
-                                @Override
-                                public String next() {
-                                    hasValue = false;
-                                    return (String) extraRequiredValue.getValue();
-                                }
+                        @Override
+                        public void remove() {
 
-                                @Override
-                                public void remove() {
-
-                                }
-                            };
                         }
                     });
                 } else if (extraRequiredValue.getKey().equals(FIX_VERSIONS_FIELD_NAME)) {
-                    issueInputBuilder.setFixVersionsNames(new Iterable<String>() {
+                    issueInputBuilder.setFixVersionsNames(() -> new Iterator<>() {
+                        boolean hasValue = true;
+
                         @Override
-                        public Iterator<String> iterator() {
-                            return new Iterator<String>() {
-                                boolean hasValue = true;
+                        public boolean hasNext() {
+                            return hasValue;
+                        }
 
-                                @Override
-                                public boolean hasNext() {
-                                    return hasValue;
-                                }
+                        @Override
+                        public String next() {
+                            hasValue = false;
+                            return (String) extraRequiredValue.getValue();
+                        }
 
-                                @Override
-                                public String next() {
-                                    hasValue = false;
-                                    return (String) extraRequiredValue.getValue();
-                                }
+                        @Override
+                        public void remove() {
 
-                                @Override
-                                public void remove() {
-
-                                }
-                            };
                         }
                     });
                 } else if (extraRequiredValue.getKey().equals(ASSIGNEE_FIELD_NAME)) {
                     issueInputBuilder.setFieldInput(getUserFieldInput(IssueFieldId.ASSIGNEE_FIELD.id, (String) extraRequiredValue.getValue()));
                 } else if (extraRequiredValue.getKey().equals(PARENT_FIELD_NAME)) {
-                    Map<String, Object> parent = new HashMap<String, Object>();
+                    Map<String, Object> parent = new HashMap<>();
                     parent.put("key", extraRequiredValue.getValue());
                     FieldInput parentField = new FieldInput(PARENT_FIELD_NAME, new ComplexIssueInputFieldValue(parent));
                     issueInputBuilder.setFieldInput(parentField);
@@ -463,13 +448,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
             }
             Promise<BasicIssue> issue = restClient.getIssueClient().createIssue(issueInputBuilder.build());
             basicIssue = issue.get();
-        } catch (InterruptedException e) {
-            String errorMessage = e.getMessage();
-            if (errorMessage.contains(INCORRECT_PROTOCOL_ERROR_CODE)) {
-                errorMessage += INCORRECT_PROTOCOL_IN_THE_JIRA_URL;
-            }
-            return new IssueCreationResult(errorMessage);
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             String errorMessage = e.getMessage();
             if (errorMessage.contains(INCORRECT_PROTOCOL_ERROR_CODE)) {
                 errorMessage += INCORRECT_PROTOCOL_IN_THE_JIRA_URL;
@@ -535,9 +514,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
 
         try {
             restClient.getIssueClient().addAttachment(attachmentUri, inputStream, fileName).get();
-        } catch (InterruptedException e) {
-            return new AttachmentAddingResult(e.getMessage());
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             return new AttachmentAddingResult(e.getMessage());
         }
 
@@ -603,7 +580,8 @@ public class JiraProvider implements SimpleBugTrackerProvider {
 
     public InputStream getRootProject() {
         WsdlProject project = findActiveElementRootProject(activeElement);
-        return new ByteArrayInputStream(project.getConfig().toString().getBytes(StandardCharsets.UTF_8));
+        return new ByteArrayInputStream(project.getProjectDocument()
+                .toString().getBytes(StandardCharsets.UTF_8));
     }
 
     private WsdlProject findActiveElementRootProject(ModelItem activeElement) {
