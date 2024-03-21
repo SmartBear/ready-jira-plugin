@@ -20,13 +20,13 @@ import java.awt.event.FocusListener;
 @PluginPrefs
 public class JiraPrefsFactory implements Prefs {
     public static final String BUG_TRACKER_LOGIN_LABEL = "Email or username:";
-    public static final String BUG_TRACKER_PASSWORD = "API Token or Password:";
-    public static final String BUG_TRACKER_LOGIN_DESCRIPTION = "Your JIRA user account";
-    public static final String BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION = "Your JIRA user account";
-    public static final String BUG_TRACKER_PASSWORD_DESCRIPTION = "The password for logging in";
+    public static final String BUG_TRACKER_LOGIN_DESCRIPTION = "Your profile's e-mail (JIRA Cloud) or your profile's user name (JIRA Server) or empty when using a Private Access Token (PAT)." ;
+    public static final String BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION = BUG_TRACKER_LOGIN_DESCRIPTION;
+    public static final String BUG_TRACKER_PASSWORD = "Password or Personal Access Token (PAT):";
+    public static final String BUG_TRACKER_PASSWORD_DESCRIPTION = "This your password or a Personal Access Token (PAT).";
     public static final String BUG_TRACKER_URL = "JIRA server URL:";
-    public static final String BUG_TRACKER_URL_DESCRIPTION = "The URL of your JIRA instance, for instance, https://mycompany.atlassian.net";
-    public static final String BUG_TRACKER_URL_IN_FIELD_DESCRIPTION = "The URL of your JIRA instance (https://...)";
+    public static final String BUG_TRACKER_URL_IN_FIELD_DESCRIPTION = "The URL of your JIRA instance (without the /rest/api/* part)";
+    public static final String BUG_TRACKER_URL_DESCRIPTION = BUG_TRACKER_URL_IN_FIELD_DESCRIPTION + ", for instance, https://mycompany.atlassian.net or https://mycompany.net/jira";
     public static final String JIRA_PREFS_TITLE = "JIRA";
     public static final String SKIP_RELEASED_VERSIONS = "Hide released versions:";
     public static final String SKIP_RELEASED_VERSIONS_DESCRIPTION = "Do not show released versions for \"Fixed Version/s\" field";

@@ -117,7 +117,13 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         try {
             String url = bugTrackerSettings.getUrl();
             URI uri = new URI(url);
-            restClient = factory.createWithBasicHttpAuthentication(uri, bugTrackerSettings.getLogin(), bugTrackerSettings.getPassword());
+            if (bugTrackerSettings.getLogin() != null && ! bugTrackerSettings.getLogin().isEmpty() && ! bugTrackerSettings.getLogin().isBlank() ) {
+                restClient = factory.createWithBasicHttpAuthentication(uri, bugTrackerSettings.getLogin(), bugTrackerSettings.getPassword());
+            } else {
+                BearerHttpAuthenticationHandler handler = new BearerHttpAuthenticationHandler(bugTrackerSettings.getPassword());
+                restClient = factory.create(uri, handler);
+            }
+
             logger.info("[JiraProvider].[JiraProvider] restClient", restClient.toString());
         } catch (URISyntaxException e) {
             logger.error(BUG_TRACKER_URI_IS_INCORRECT);
@@ -591,7 +597,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
     public boolean settingsComplete(BugTrackerSettings settings) {
         return !(settings == null ||
                 StringUtils.isNullOrEmpty(settings.getUrl()) ||
-                StringUtils.isNullOrEmpty(settings.getLogin()) ||
+                //StringUtils.isNullOrEmpty(settings.getLogin()) ||
                 StringUtils.isNullOrEmpty(settings.getPassword()));
     }
 
