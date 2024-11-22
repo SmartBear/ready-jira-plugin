@@ -143,7 +143,6 @@
                 <exclude>*:*slf4j*</exclude>
                 <exclude>*:*jaxb*</exclude>
                 <exclude>*:*gossip*</exclude>
-                <exclude>*:*jettison*</exclude>
                 <exclude>*:*miglayout*</exclude>
                 <exclude>*:*qdox*</exclude>
                 <exclude>*:*plexus*</exclude>

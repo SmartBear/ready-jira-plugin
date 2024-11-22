@@ -21,7 +21,7 @@
     </repositories>
 
     <properties>
-        <ready-api-version>3.49.0</ready-api-version>
+        <ready-api-version>3.57.0-SNAPSHOT</ready-api-version>
         <log4j-core-version>2.17.1</log4j-core-version>
         <guice.version>4.2.2</guice.version>
         <xmlbeans.version>3.1.2-sb-fixed</xmlbeans.version>
@@ -206,9 +206,9 @@
             <version>4.7.2</version>
         </dependency>
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>jsr311-api</artifactId>
-            <version>1.1.1</version>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <version>3.1.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
