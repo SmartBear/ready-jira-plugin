@@ -24,7 +24,7 @@
         <ready-api-version>3.57.0-SNAPSHOT</ready-api-version>
         <log4j-core-version>2.17.1</log4j-core-version>
         <guice.version>4.2.2</guice.version>
-        <xmlbeans.version>3.1.2-sb-fixed</xmlbeans.version>
+        <xmlbeans.version>5.2.2</xmlbeans.version>
     </properties>
 
     <build>
@@ -220,6 +220,11 @@
             <groupId>org.apache.xmlbeans</groupId>
             <artifactId>xmlbeans</artifactId>
             <version>${xmlbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jettison</groupId>
+            <artifactId>jettison</artifactId>
+            <version>1.5.4</version>
         </dependency>
     </dependencies>
 </project>
