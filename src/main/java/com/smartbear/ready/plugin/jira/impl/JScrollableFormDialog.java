@@ -140,6 +140,11 @@ public class JScrollableFormDialog extends SwingXFormDialog implements XFormDial
         dialog.setMinimumSize(oldMinSize);
     }
 
+    @Override
+    public void setResizable(boolean b) {
+        dialog.setResizable(b);
+    }
+
     public void addAction(Action action) {
         DefaultActionList actions = new DefaultActionList();
         actions.addAction(action);
