@@ -6,7 +6,7 @@
 
     <groupId>com.smartbear</groupId>
     <artifactId>ready-jira-plugin</artifactId>
-    <version>1.6.6-SNAPSHOT</version> <!--Don't forget to update PluginConfig file within this version-->
+    <version>1.6.7</version> <!--Don't forget to update PluginConfig file within this version-->
 
     <repositories>
         <repository>
@@ -21,7 +21,7 @@
     </repositories>
 
     <properties>
-        <ready-api-version>3.57.0-SNAPSHOT</ready-api-version>
+        <ready-api-version>3.57.0</ready-api-version>
         <log4j-core-version>2.17.1</log4j-core-version>
         <guice.version>4.2.2</guice.version>
         <xmlbeans.version>5.2.2</xmlbeans.version>
@@ -61,6 +61,14 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
                     <descriptors>
                         <descriptor>src/assembly/dist-assembly.xml</descriptor>
