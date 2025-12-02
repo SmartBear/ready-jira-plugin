@@ -8,10 +8,10 @@ import com.eviware.soapui.support.components.SimpleForm;
 import com.eviware.soapui.support.types.StringToStringMap;
 import com.smartbear.ready.plugin.jira.impl.JiraProvider;
 import com.smartbear.ready.plugin.jira.settings.BugTrackerPrefs;
-import com.smartbear.ready.ui.components.designkit.textfield.SBTextField;
 
 import javax.swing.JCheckBox;
 import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.event.FocusEvent;
@@ -19,7 +19,6 @@ import java.awt.event.FocusListener;
 
 @PluginPrefs
 public class JiraPrefsFactory implements Prefs {
-
     public static final String BUG_TRACKER_LOGIN_LABEL = "Email or username:";
     public static final String BUG_TRACKER_PASSWORD = "API Token or Password:";
     public static final String BUG_TRACKER_LOGIN_DESCRIPTION = "Your JIRA user account";
@@ -56,7 +55,7 @@ public class JiraPrefsFactory implements Prefs {
 
         @Override
         public void focusGained(FocusEvent e) {
-            SBTextField bugTrackerUrl = (SBTextField) e.getSource();
+            JTextField bugTrackerUrl = (JTextField)e.getSource();
             if (bugTrackerUrl.getText() != null &&
                     bugTrackerUrl.getText().equals(BUG_TRACKER_URL_IN_FIELD_DESCRIPTION)) {
                 bugTrackerUrl.setText("");
@@ -65,7 +64,7 @@ public class JiraPrefsFactory implements Prefs {
 
         @Override
         public void focusLost(FocusEvent e) {
-            SBTextField bugTrackerUrl = (SBTextField) e.getSource();
+            JTextField bugTrackerUrl = (JTextField)e.getSource();
             if (bugTrackerUrl.getText() != null &&
                     bugTrackerUrl.getText().equals("")) {
                 bugTrackerUrl.setText(BUG_TRACKER_URL_IN_FIELD_DESCRIPTION);
@@ -77,7 +76,7 @@ public class JiraPrefsFactory implements Prefs {
 
         @Override
         public void focusGained(FocusEvent e) {
-            SBTextField loginField = (SBTextField) e.getSource();
+            JTextField loginField = (JTextField)e.getSource();
             if (loginField.getText() != null &&
                     loginField.getText().equals(BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION)) {
                 loginField.setText("");
@@ -86,7 +85,7 @@ public class JiraPrefsFactory implements Prefs {
 
         @Override
         public void focusLost(FocusEvent e) {
-            SBTextField loginField = (SBTextField) e.getSource();
+            JTextField loginField = (JTextField)e.getSource();
             if (loginField.getText() != null &&
                     loginField.getText().equals("")) {
                 loginField.setText(BUG_TRACKER_LOGIN_IN_FIELD_DESCRIPTION);
@@ -99,12 +98,12 @@ public class JiraPrefsFactory implements Prefs {
         if (form == null) {
             form = new ListStyleForm();
             form.addSpace();
-            SBTextField loginField = form.appendTextField(BUG_TRACKER_LOGIN_LABEL, BUG_TRACKER_LOGIN_DESCRIPTION);
+            JTextField loginField = form.appendTextField(BUG_TRACKER_LOGIN_LABEL, BUG_TRACKER_LOGIN_DESCRIPTION);
             loginField.getDocument().addDocumentListener(new BugTrackerSettingsChangeListener());
             loginField.addFocusListener(new BugTrackerLoginFieldFocusListener());
             JPasswordField passwordField = form.appendPasswordField(BUG_TRACKER_PASSWORD, BUG_TRACKER_PASSWORD_DESCRIPTION);
             passwordField.getDocument().addDocumentListener(new BugTrackerSettingsChangeListener());
-            SBTextField bugTrackerUrl = form.appendTextField(BUG_TRACKER_URL, BUG_TRACKER_URL_DESCRIPTION);
+            JTextField bugTrackerUrl = form.appendTextField(BUG_TRACKER_URL, BUG_TRACKER_URL_DESCRIPTION);
             bugTrackerUrl.getDocument().addDocumentListener(new BugTrackerSettingsChangeListener());
             bugTrackerUrl.addFocusListener(new BugTrackerUrlFieldFocusListener());
             JCheckBox skipReleasedVersions = form.appendCheckBox(SKIP_RELEASED_VERSIONS, SKIP_RELEASED_VERSIONS_DESCRIPTION, false);
