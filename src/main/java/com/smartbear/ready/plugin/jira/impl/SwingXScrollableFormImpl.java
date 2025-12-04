@@ -14,10 +14,10 @@ import com.eviware.x.impl.swing.AbstractSwingXFormField;
 import com.eviware.x.impl.swing.FileFormField;
 import com.eviware.x.impl.swing.JCheckBoxFormField;
 import com.eviware.x.impl.swing.JComboBoxFormField;
-import com.eviware.x.impl.swing.JLabelFormField;
-import com.eviware.x.impl.swing.JPasswordFieldFormField;
-import com.eviware.x.impl.swing.JTextAreaFormField;
-import com.eviware.x.impl.swing.JTextFieldFormField;
+import com.eviware.x.impl.swing.SBLabelFormField;
+import com.eviware.x.impl.swing.SBPasswordFieldFormField;
+import com.eviware.x.impl.swing.SBTextAreaFormField;
+import com.eviware.x.impl.swing.SBTextFieldFormField;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 public class SwingXScrollableFormImpl implements XForm {
+
     private JScrollPane scrollPane;
     private JPanel panel;
     private CellConstraints cc = new CellConstraints();
@@ -71,7 +72,6 @@ public class SwingXScrollableFormImpl implements XForm {
         scrollPane = new JScrollPane(panel);
         rowSpec = new RowSpec(rowAlignment + ":pref");
     }
-
 
     public String getName() {
         return name;
@@ -220,13 +220,13 @@ public class SwingXScrollableFormImpl implements XForm {
                 || type == FieldType.PROJECT_FILE || type == FieldType.FILE_OR_FOLDER) {
             return (XFormTextField) addComponent(name, new FileFormField(description, type, name));
         } else if (type == FieldType.PASSWORD) {
-            JPasswordFieldFormField pwdField = new JPasswordFieldFormField(FieldType.PASSWORD.toString());
+            SBPasswordFieldFormField pwdField = new SBPasswordFieldFormField(FieldType.PASSWORD.toString());
             pwdField.getComponent().setColumns(30);
             pwdField.setToolTip(description);
             addComponent(name, pwdField);
             return pwdField;
         } else if (type == FieldType.TEXTAREA) {
-            JTextAreaFormField field = new JTextAreaFormField();
+            SBTextAreaFormField field = new SBTextAreaFormField();
             field.getTextArea().setColumns(40);
             field.getTextArea().setRows(5);
             Dimension textAreaDimension = field.getTextArea().getPreferredSize();
@@ -239,7 +239,7 @@ public class SwingXScrollableFormImpl implements XForm {
             addComponent(name, field);
             return field;
         } else {
-            JTextFieldFormField textField = new JTextFieldFormField();
+            SBTextFieldFormField textField = new SBTextFieldFormField();
             textField.getComponent().setColumns(40);
             textField.getComponent().setName(name);
             textField.setToolTip(description);
@@ -311,7 +311,7 @@ public class SwingXScrollableFormImpl implements XForm {
     }
 
     public void addLabel(String name, String label) {
-        addComponent(name, new JLabelFormField(label));
+        addComponent(name, new SBLabelFormField(label));
     }
 
     public XFormField[] getFormFields() {
