@@ -6,7 +6,7 @@
 
     <groupId>com.smartbear</groupId>
     <artifactId>ready-jira-plugin</artifactId>
-    <version>1.7.0-reskin</version> <!--Don't forget to update PluginConfig file within this version-->
+    <version>1.7.1-reskin-SNAPSHOT</version> <!--Don't forget to update PluginConfig file within this version-->
 
     <repositories>
         <repository>
