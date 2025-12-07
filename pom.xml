@@ -6,7 +6,7 @@
 
     <groupId>com.smartbear</groupId>
     <artifactId>ready-jira-plugin</artifactId>
-    <version>1.7.0-reskin</version> <!--Don't forget to update PluginConfig file within this version-->
+    <version>1.7.1-reskin</version> <!--Don't forget to update PluginConfig file within this version-->
 
     <repositories>
         <repository>
@@ -21,7 +21,7 @@
     </repositories>
 
     <properties>
-        <ready-api-version>3.57.0</ready-api-version>
+        <ready-api-version>4.0.0-SNAPSHOT</ready-api-version>
         <log4j-core-version>2.17.1</log4j-core-version>
         <guice.version>4.2.2</guice.version>
         <xmlbeans.version>5.2.2</xmlbeans.version>
