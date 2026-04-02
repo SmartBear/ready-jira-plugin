@@ -12,8 +12,8 @@ import com.eviware.x.form.XFormOptionsField;
 import com.eviware.x.form.XFormTextField;
 import com.eviware.x.impl.swing.AbstractSwingXFormField;
 import com.eviware.x.impl.swing.FileFormField;
-import com.eviware.x.impl.swing.JCheckBoxFormField;
 import com.eviware.x.impl.swing.JComboBoxFormField;
+import com.eviware.x.impl.swing.SBCheckBoxFormField;
 import com.eviware.x.impl.swing.SBLabelFormField;
 import com.eviware.x.impl.swing.SBPasswordFieldFormField;
 import com.eviware.x.impl.swing.SBTextAreaFormField;
@@ -100,7 +100,7 @@ public class SwingXScrollableFormImpl implements XForm {
     }
 
     public XFormField addCheckBox(String name, String description) {
-        JCheckBoxFormField checkBox = new JCheckBoxFormField(description == null ? name : description);
+        SBCheckBoxFormField checkBox = new SBCheckBoxFormField(description == null ? name : description);
         if (name != null && description != null) {
             checkBox.setToolTip(description);
         }
@@ -183,12 +183,12 @@ public class SwingXScrollableFormImpl implements XForm {
 
 
     public XFormOptionsField addComboBox(String name, Object[] values, String description) {
-        JComboBoxFormField comboBox = new JComboBoxFormField(values);
+        JComboBoxFormField comboBox = new JComboBoxFormField(values, name);
         comboBox.setToolTip(description);
-        comboBox.getComponent().setName(name);
         addComponent(name, comboBox);
         return comboBox;
     }
+
 
     @Override
     public XFormOptionsField addComboBox(String s, Object[] objects, String s1, boolean b) {
