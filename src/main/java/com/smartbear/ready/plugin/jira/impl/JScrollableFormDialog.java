@@ -34,6 +34,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog.ModalityType;
@@ -52,6 +53,9 @@ public class JScrollableFormDialog extends SwingXFormDialog implements XFormDial
     public JScrollableFormDialog(String name, SwingXScrollableFormImpl form, ActionList actions, String description, ImageIcon icon) {
         dialog = new JDialog(UISupport.getMainFrame(), name, true);
         dialog.setName(name);
+
+        SwingUtilities.updateComponentTreeUI(dialog);
+
         this.actions = actions;
         buttons = UISupport.initDialogActions(actions, dialog);
         buttons.setBorder(BorderFactory.createEmptyBorder(borderSize, 0, 0, 0));

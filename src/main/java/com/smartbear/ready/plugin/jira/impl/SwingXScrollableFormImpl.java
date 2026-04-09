@@ -183,12 +183,12 @@ public class SwingXScrollableFormImpl implements XForm {
 
 
     public XFormOptionsField addComboBox(String name, Object[] values, String description) {
-        JComboBoxFormField comboBox = new JComboBoxFormField(values);
+        JComboBoxFormField comboBox = new JComboBoxFormField(values, name);
         comboBox.setToolTip(description);
-        comboBox.getComponent().setName(name);
         addComponent(name, comboBox);
         return comboBox;
     }
+
 
     @Override
     public XFormOptionsField addComboBox(String s, Object[] objects, String s1, boolean b) {
