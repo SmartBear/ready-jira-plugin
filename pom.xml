@@ -21,10 +21,7 @@
     </repositories>
 
     <properties>
-        <ready-api-version>4.0.0-SNAPSHOT</ready-api-version>
-        <log4j-core-version>2.25.3</log4j-core-version>
-        <guice.version>4.2.2</guice.version>
-        <xmlbeans.version>5.2.2</xmlbeans.version>
+        <ready-api-version>4.1.0</ready-api-version>
     </properties>
 
     <build>
@@ -77,6 +74,18 @@
             </plugin>
         </plugins>
     </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.smartbear</groupId>
+                <artifactId>ready-api</artifactId>
+                <version>${ready-api-version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -170,7 +179,6 @@
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>${guice.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -222,12 +230,10 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>${log4j-core-version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlbeans</groupId>
             <artifactId>xmlbeans</artifactId>
-            <version>${xmlbeans.version}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jettison</groupId>
