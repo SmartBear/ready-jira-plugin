@@ -25,6 +25,7 @@
         <log4j-core-version>2.25.3</log4j-core-version>
         <guice.version>4.2.2</guice.version>
         <xmlbeans.version>5.2.2</xmlbeans.version>
+        <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
     </properties>
 
     <build>
@@ -235,4 +236,36 @@
             <version>1.5.4</version>
         </dependency>
     </dependencies>
+
+
+    <profiles>
+        <profile>
+            <id>snapshot-ban</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <version>${maven-enforcer-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>enforce-snapshot-ban</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <banDynamicVersions>
+                                            <allowSnapshots>false</allowSnapshots>
+                                        </banDynamicVersions>
+                                    </rules>
+                                    <fail>true</fail>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
