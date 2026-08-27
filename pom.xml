@@ -237,7 +237,6 @@
         </dependency>
     </dependencies>
 
-
     <profiles>
         <profile>
             <id>snapshot-ban</id>
