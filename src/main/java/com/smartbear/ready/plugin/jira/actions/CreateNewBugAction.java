@@ -11,7 +11,8 @@ import com.eviware.soapui.model.testsuite.TestStep;
 import com.eviware.soapui.model.testsuite.TestSuite;
 import com.eviware.soapui.model.workspace.Workspace;
 import com.eviware.soapui.ready.LicenseCheckUtils;
-import com.eviware.soapui.support.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.action.support.AbstractSoapUIAction;
 import com.eviware.soapui.support.types.StringToStringMap;
@@ -50,8 +51,8 @@ import java.util.Map;
 public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
     public static final String TOOLBAR_BUTTON_CAPTION = "JIRA";
     public static final String SPECIFIES_THE_REQUIRED_FIELDS_TO_CREATE_NEW_ISSUE_IN_JIRA = "Populate the required fields to create a new JIRA issue";
-    public static final String WORKSPACE_ITEM_SELECTED = "Unable to create a  JIRA item." + StringUtils.NEWLINE + "Select a project, test case or test suite in the Navigator.";
-    public static final String NO_AVAILABLE_JIRA_PROJECTS = "Unable to retrieve information from JIRA." + StringUtils.NEWLINE + "Possible causes:" + StringUtils.NEWLINE + "  - The JIRA Integration plugin settings are invalid." + StringUtils.NEWLINE + " You might have specified email instead of username." + StringUtils.NEWLINE + "  - You do not have enough permissions in JIRA.";
+    public static final String WORKSPACE_ITEM_SELECTED = "Unable to create a  JIRA item." + System.lineSeparator() + "Select a project, test case or test suite in the Navigator.";
+    public static final String NO_AVAILABLE_JIRA_PROJECTS = "Unable to retrieve information from JIRA." + System.lineSeparator() + "Possible causes:" + System.lineSeparator() + "  - The JIRA Integration plugin settings are invalid." + System.lineSeparator() + " You might have specified email instead of username." + System.lineSeparator() + "  - You do not have enough permissions in JIRA.";
     public static final String NEW_ISSUE_DETAILS_FORM_NAME = "Creating a new JIRA item";
     public static final String PLEASE_WAIT = "Please wait";
     public static final String ADDING_ATTACHMENTS = "Adding attachments";
@@ -206,7 +207,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             }
 
             String attachAnyFileValue = issueDetails.getValue(BugInfoDialogConsts.ATTACH_ANY_FILE);
-            if (!StringUtils.isNullOrEmpty(issueDetails.getValue(BugInfoDialogConsts.ATTACH_ANY_FILE))) {
+            if (!StringUtils.isBlank(issueDetails.getValue(BugInfoDialogConsts.ATTACH_ANY_FILE))) {
                 AttachmentAddingResult attachResult = bugTrackerProvider.attachFile(newIssueAttachURI, attachAnyFileValue);
                 if (!attachResult.getSuccess()) {
                     isAttachmentSuccess = false;
@@ -256,12 +257,12 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             if (isSpecifiedTypeCustomField(entry.getValue(), MULTISELECT_CUSTOM_FIELD_TYPE) ||
                     isSpecifiedTypeCustomField(entry.getValue(), MULTICHECKBOXES_CUSTOM_FIELD_TYPE)) {
                 XFormField formField = issueDetails.getFormField(entry.getValue().getName());
-                String[] selectedOptions = StringUtils.toStringArray(((XFormMultiSelectList) formField).getSelectedOptions());
+                String[] selectedOptions = ArrayUtils.toStringArray(((XFormMultiSelectList) formField).getSelectedOptions());
                 extraValues.put(key, selectedOptions);
                 continue;
             }
 
-            if (!StringUtils.isNullOrEmpty(values.get(entry.getValue().getName()))) {
+            if (!StringUtils.isBlank(values.get(entry.getValue().getName()))) {
                 extraValues.put(key, values.get(entry.getValue().getName()));
             }
         }
@@ -540,7 +541,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
             List<String> allProjectsList = bugTrackerProvider.getListOfAllProjects();
             XFormOptionsField projectsCombo = form.addComboBox(BugInfoDialogConsts.TARGET_ISSUE_PROJECT,
                     allProjectsList.toArray(), BugInfoDialogConsts.TARGET_ISSUE_PROJECT);
-            if (StringUtils.isNullOrEmpty(selectedProject)) {
+            if (StringUtils.isBlank(selectedProject)) {
                 selectedProject = (String) (allProjectsList.toArray()[0]);
             }
             projectsCombo.setValue(selectedProject);
@@ -554,7 +555,7 @@ public class CreateNewBugAction extends AbstractSoapUIAction<ModelItem> {
                     issueTypesCombo.setOptions(bugTrackerProvider.getListOfProjectIssueTypes(selectedProject).toArray());
                 }
             });
-            if (StringUtils.isNullOrEmpty(selectedIssueType)) {
+            if (StringUtils.isBlank(selectedIssueType)) {
                 selectedIssueType = (String) currentProjectIssueTypes[0];
             }
             issueTypesCombo.setOptions(currentProjectIssueTypes);

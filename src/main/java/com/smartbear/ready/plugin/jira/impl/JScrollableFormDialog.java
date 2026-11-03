@@ -16,7 +16,7 @@
 
 package com.smartbear.ready.plugin.jira.impl;
 
-import com.eviware.soapui.support.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.action.swing.ActionList;
 import com.eviware.soapui.support.action.swing.DefaultActionList;
@@ -39,6 +39,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 public class JScrollableFormDialog extends SwingXFormDialog implements XFormDialogEx{
@@ -187,7 +188,7 @@ public class JScrollableFormDialog extends SwingXFormDialog implements XFormDial
             return -1;
         }
 
-        return StringUtils.toStringList(options).indexOf(form.getComponentValue(name));
+        return Arrays.asList(ArrayUtils.toStringArray(options)).indexOf(form.getComponentValue(name));
     }
 
     private CountDownLatch startSignal;

@@ -28,6 +28,19 @@
         <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- take managed versions (e.g. commons-lang3) from ReadyAPI -->
+            <dependency>
+                <groupId>com.smartbear</groupId>
+                <artifactId>ready-api</artifactId>
+                <version>${ready-api-version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
@@ -156,6 +169,11 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.jgoodies</groupId>

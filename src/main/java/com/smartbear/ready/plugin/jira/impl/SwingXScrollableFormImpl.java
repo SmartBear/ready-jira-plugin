@@ -4,7 +4,7 @@ import com.eviware.soapui.impl.rest.DefinitionSource;
 import com.eviware.soapui.impl.wsdl.WsdlInterface;
 import com.eviware.soapui.impl.wsdl.actions.iface.tools.support.NamespaceTable;
 import com.eviware.soapui.model.iface.Interface;
-import com.eviware.soapui.support.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import com.eviware.soapui.support.types.StringToStringMap;
 import com.eviware.x.form.XForm;
 import com.eviware.x.form.XFormField;
@@ -129,7 +129,7 @@ public class SwingXScrollableFormImpl implements XForm {
 
         AbstractSwingXFormField<?> swingFormComponent = (AbstractSwingXFormField<?>) formComponent;
 
-        if (!StringUtils.isNullOrEmpty(label) && !label.startsWith("###")) {
+        if (!StringUtils.isBlank(label) && !label.startsWith("###")) {
             JLabel jlabel = null;
             if (label.endsWith("___")) {
                 jlabel = new JLabel(label.substring(0, label.length() - 3));
@@ -151,7 +151,7 @@ public class SwingXScrollableFormImpl implements XForm {
             swingFormComponent.getComponent().getAccessibleContext().setAccessibleDescription(label);
         }
 
-        if (!StringUtils.isNullOrEmpty(label) && label.startsWith("###")) {
+        if (!StringUtils.isBlank(label) && label.startsWith("###")) {
             panel.add(swingFormComponent.getComponent(), cc.xyw(2, row, 4));
         } else  //Keep the name/Label to empty/null to add only the component (in column 4), not the JLabel for name
         {
@@ -206,7 +206,7 @@ public class SwingXScrollableFormImpl implements XForm {
         layout.appendRow(rowSpec);
         int row = layout.getRowCount();
 
-        if (StringUtils.isNullOrEmpty(label)) {
+        if (StringUtils.isBlank(label)) {
             scrollPane.add(new JSeparator(), cc.xywh(2, row, 3, 1));
         } else {
             scrollPane.add(new JLabel(label), cc.xywh(2, row, 3, 1));

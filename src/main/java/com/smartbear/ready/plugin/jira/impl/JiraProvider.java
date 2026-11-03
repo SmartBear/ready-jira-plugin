@@ -23,7 +23,7 @@ import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.model.ModelItem;
 import com.eviware.soapui.model.settings.Settings;
 import com.eviware.soapui.model.support.ModelSupport;
-import com.eviware.soapui.support.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import com.eviware.soapui.support.UISupport;
 import com.smartbear.ready.plugin.jira.clients.AsynchronousIssueRestClientServerEx;
 import com.smartbear.ready.plugin.jira.clients.AsynchronousJiraRestClientEx;
@@ -508,7 +508,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         if (attachmentUri == null) {
             return new AttachmentAddingResult(BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED);
         }
-        if (StringUtils.isNullOrEmpty(fileName)) {
+        if (StringUtils.isBlank(fileName)) {
             return new AttachmentAddingResult(BUG_TRACKER_FILE_NAME_NOT_SPECIFIED);
         }
 
@@ -526,7 +526,7 @@ public class JiraProvider implements SimpleBugTrackerProvider {
         if (attachmentUri == null) {
             return new AttachmentAddingResult(BUG_TRACKER_ISSUE_KEY_NOT_SPECIFIED);
         }
-        if (StringUtils.isNullOrEmpty(filePath)) {
+        if (StringUtils.isBlank(filePath)) {
             return new AttachmentAddingResult(BUG_TRACKER_INCORRECT_FILE_PATH);
         }
         File file = new File(filePath);
@@ -590,9 +590,9 @@ public class JiraProvider implements SimpleBugTrackerProvider {
 
     public boolean settingsComplete(BugTrackerSettings settings) {
         return !(settings == null ||
-                StringUtils.isNullOrEmpty(settings.getUrl()) ||
-                StringUtils.isNullOrEmpty(settings.getLogin()) ||
-                StringUtils.isNullOrEmpty(settings.getPassword()));
+                StringUtils.isBlank(settings.getUrl()) ||
+                StringUtils.isBlank(settings.getLogin()) ||
+                StringUtils.isBlank(settings.getPassword()));
     }
 
     public boolean settingsComplete() {
